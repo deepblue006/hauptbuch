@@ -1,0 +1,4043 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Finanz · Contor">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22180%22%20height%3D%22180%22%20viewBox%3D%220%200%20180%20180%22%3E%3Crect%20width%3D%22180%22%20height%3D%22180%22%20fill%3D%22%231F3D33%22%2F%3E%3Crect%20x%3D%2214%22%20y%3D%2214%22%20width%3D%22152%22%20height%3D%22152%22%20fill%3D%22none%22%20stroke%3D%22%239E8248%22%20stroke-width%3D%221.5%22%2F%3E%3Crect%20x%3D%2220%22%20y%3D%2220%22%20width%3D%22140%22%20height%3D%22140%22%20fill%3D%22none%22%20stroke%3D%22%239E8248%22%20stroke-width%3D%220.75%22%2F%3E%3Ccircle%20cx%3D%2290%22%20cy%3D%2290%22%20r%3D%2234%22%20fill%3D%22%238C2B25%22%2F%3E%3Ccircle%20cx%3D%2290%22%20cy%3D%2290%22%20r%3D%2234%22%20fill%3D%22none%22%20stroke%3D%22%23F1EADA%22%20stroke-width%3D%222%22%20opacity%3D%220.25%22%2F%3E%3Ccircle%20cx%3D%2290%22%20cy%3D%2290%22%20r%3D%2228%22%20fill%3D%22none%22%20stroke%3D%22%236E1F1A%22%20stroke-width%3D%223%22%20opacity%3D%220.6%22%2F%3E%3Ctext%20x%3D%2290%22%20y%3D%22103%22%20font-family%3D%22Georgia%2C%20serif%22%20font-size%3D%2234%22%20fill%3D%22%23F1EADA%22%20text-anchor%3D%22middle%22%3EFC%3C%2Ftext%3E%3C%2Fsvg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22180%22%20height%3D%22180%22%20viewBox%3D%220%200%20180%20180%22%3E%3Crect%20width%3D%22180%22%20height%3D%22180%22%20fill%3D%22%231F3D33%22%2F%3E%3Crect%20x%3D%2214%22%20y%3D%2214%22%20width%3D%22152%22%20height%3D%22152%22%20fill%3D%22none%22%20stroke%3D%22%239E8248%22%20stroke-width%3D%221.5%22%2F%3E%3Crect%20x%3D%2220%22%20y%3D%2220%22%20width%3D%22140%22%20height%3D%22140%22%20fill%3D%22none%22%20stroke%3D%22%239E8248%22%20stroke-width%3D%220.75%22%2F%3E%3Ccircle%20cx%3D%2290%22%20cy%3D%2290%22%20r%3D%2234%22%20fill%3D%22%238C2B25%22%2F%3E%3Ccircle%20cx%3D%2290%22%20cy%3D%2290%22%20r%3D%2234%22%20fill%3D%22none%22%20stroke%3D%22%23F1EADA%22%20stroke-width%3D%222%22%20opacity%3D%220.25%22%2F%3E%3Ccircle%20cx%3D%2290%22%20cy%3D%2290%22%20r%3D%2228%22%20fill%3D%22none%22%20stroke%3D%22%236E1F1A%22%20stroke-width%3D%223%22%20opacity%3D%220.6%22%2F%3E%3Ctext%20x%3D%2290%22%20y%3D%22103%22%20font-family%3D%22Georgia%2C%20serif%22%20font-size%3D%2234%22%20fill%3D%22%23F1EADA%22%20text-anchor%3D%22middle%22%3EFC%3C%2Ftext%3E%3C%2Fsvg%3E">
+<meta name="theme-color" content="#1F3D33">
+<title>Finanz · Contor</title>
+<style>
+  :root {
+    --papier:            #F1EADA;
+    --papier-dunkel:     #E6DCC6;
+    --tinte:             #2B2418;
+    --tinte-blass:       #6B5F49;
+    --kontor-gruen:      #1F3D33;
+    --kontor-gruen-hell: #2C5445;
+    --gold:              #9E8248;
+    --siegellack:        #8C2B25;
+    --haben-gruen:       #3D6B4F;
+    --linie:             rgba(43, 36, 24, 0.35);
+    --schrift-auszeichnung: 'Hoefler Text', 'Baskerville', Georgia, serif;
+    --schrift-text: 'Charter', 'Iowan Old Style', Georgia, serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body { height: 100%; }
+
+  body {
+    background: var(--kontor-gruen);
+    font-family: var(--schrift-text);
+    color: var(--tinte);
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    justify-content: center;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  button, input {
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+  }
+  button { cursor: pointer; background: none; border: none; }
+  button:focus-visible, input:focus-visible, a:focus-visible {
+    outline: 3px solid var(--gold);
+    outline-offset: 2px;
+  }
+
+  /* ── Buchdeckel-Rahmen ─────────────────────────── */
+  .buch {
+    width: 100%;
+    max-width: 430px;
+    min-height: 100vh;
+    min-height: 100dvh;
+    background: var(--kontor-gruen);
+    padding: calc(10px + env(safe-area-inset-top)) 10px 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  header.deckel {
+    color: var(--papier);
+    text-align: center;
+    padding: 22px 12px 18px;
+    position: relative;
+  }
+  header.deckel::before, header.deckel::after {
+    content: "";
+    position: absolute;
+    left: 18px; right: 18px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+  header.deckel::before { top: 12px; }
+  header.deckel::after  { bottom: 8px; }
+
+  .wortmarke {
+    font-family: var(--schrift-auszeichnung);
+    font-size: 1.7rem;
+    letter-spacing: 0.14em;
+    color: #E9DFC8;
+    text-transform: uppercase;
+  }
+  .wortmarke .amp { color: var(--gold); font-style: italic; text-transform: none; }
+  .untertitel {
+    font-size: 0.72rem;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-top: 5px;
+  }
+
+  /* ── Papierseite ───────────────────────────────── */
+  .seite {
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.55 0 0 0 0 0.48 0 0 0 0 0.35 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E"),
+      var(--papier);
+    border-radius: 3px 3px 0 0;
+    box-shadow: inset 0 0 40px rgba(43,36,24,0.10);
+    flex: 1;
+    padding: 20px 18px calc(110px + env(safe-area-inset-bottom));
+    position: relative;
+  }
+
+  .datumszeile {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-style: italic;
+    color: var(--tinte-blass);
+    font-size: 0.86rem;
+    border-bottom: 1px solid var(--linie);
+    padding-bottom: 10px;
+    gap: 12px;
+  }
+  .datumszeile b { font-style: normal; font-weight: 600; color: var(--tinte); }
+  .datumszeile button {
+    font-style: italic;
+    font-size: 0.86rem;
+    color: var(--tinte-blass);
+    padding: 0;
+    text-align: right;
+  }
+  .datumszeile button b { border-bottom: 1px solid var(--linie); padding-bottom: 1px; }
+
+  /* ── Monatssaldo (Kopf) ────────────────────────── */
+  .saldo-kopf {
+    text-align: center;
+    padding: 22px 0 18px;
+    border-bottom: 1px solid var(--linie);
+  }
+  .saldo-kopf .zettel {
+    font-size: 0.7rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--tinte-blass);
+  }
+  .saldo-betrag {
+    font-family: var(--schrift-auszeichnung);
+    font-size: 2.9rem;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+    margin-top: 4px;
+  }
+  .saldo-betrag small { font-size: 1.4rem; color: var(--tinte-blass); }
+  .saldo-betrag.ueberzogen { color: var(--siegellack); }
+  .saldo-kopf .frei {
+    font-style: italic;
+    font-size: 0.88rem;
+    color: var(--haben-gruen);
+    margin-top: 2px;
+  }
+  .saldo-kopf .frei.rot { color: var(--siegellack); }
+  .saldo-kopf .frei.neutral { color: var(--tinte-blass); }
+
+  /* ── Hauptbuch ─────────────────────────────────── */
+  .buchtitel {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 22px 0 8px;
+    font-size: 0.72rem;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--tinte-blass);
+  }
+  .buchtitel::before, .buchtitel::after {
+    content: ""; flex: 1; height: 1px; background: var(--linie);
+  }
+
+  .spaltenkopf {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 12px;
+    font-size: 0.68rem;
+    font-style: italic;
+    color: var(--tinte-blass);
+    padding: 4px 2px 6px;
+    border-bottom: 1.5px solid var(--tinte);
+  }
+  .spaltenkopf span:nth-child(2), .spaltenkopf span:nth-child(3),
+  .posten .ist, .posten .soll { text-align: right; min-width: 72px; }
+
+  .posten {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 12px;
+    align-items: baseline;
+    padding: 12px 2px 4px;
+    width: 100%;
+    text-align: left;
+    border-radius: 0;
+  }
+  .posten .name { font-weight: 500; font-size: 0.98rem; }
+  .posten .name em { font-weight: 400; font-size: 0.8rem; color: var(--tinte-blass); }
+  .posten .ist  { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .posten .soll { color: var(--tinte-blass); font-variant-numeric: tabular-nums; font-size: 0.88rem; }
+
+  .tintenlinie {
+    grid-column: 1 / -1;
+    height: 3px;
+    margin: 6px 0 2px;
+    background: repeating-linear-gradient(90deg, var(--linie) 0 3px, transparent 3px 6px);
+    position: relative;
+    border-radius: 2px;
+  }
+  .tintenlinie i {
+    position: absolute; inset: 0 auto 0 0;
+    background: var(--kontor-gruen-hell);
+    border-radius: 2px;
+    width: var(--w, 0%);
+  }
+  .posten.ueberzogen .tintenlinie i { background: var(--siegellack); }
+  .posten.ueberzogen .ist { color: var(--siegellack); }
+
+  .posten .rest {
+    grid-column: 1 / -1;
+    font-size: 0.78rem;
+    font-style: italic;
+    color: var(--tinte-blass);
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--linie);
+  }
+  .posten.ueberzogen .rest { color: var(--siegellack); }
+
+  .abschluss {
+    margin-top: 4px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    padding: 14px 2px 8px;
+    font-weight: 600;
+  }
+  .abschluss .betrag {
+    font-variant-numeric: tabular-nums;
+    border-bottom: 4px double var(--tinte);
+    padding-bottom: 3px;
+  }
+
+  .vermerk {
+    margin-top: 18px;
+    font-style: italic;
+    font-size: 0.85rem;
+    color: var(--tinte-blass);
+    text-align: center;
+  }
+
+  .fusszeile {
+    margin-top: 26px;
+    text-align: center;
+    font-size: 0.8rem;
+    font-style: italic;
+    color: var(--tinte-blass);
+  }
+  .fusszeile button {
+    font-style: italic;
+    font-size: 0.8rem;
+    color: var(--tinte-blass);
+    padding: 6px 2px;
+    text-decoration: underline;
+    text-decoration-color: var(--linie);
+    text-underline-offset: 3px;
+  }
+  .fusszeile .trenner { color: var(--linie); padding: 0 4px; }
+
+  /* ── Siegel-Knopf ──────────────────────────────── */
+  .siegel {
+    position: fixed;
+    right: max(18px, calc((100vw - 430px) / 2 + 18px));
+    bottom: calc(20px + env(safe-area-inset-bottom));
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    border: none;
+    background: radial-gradient(circle at 35% 30%, #A83B33, var(--siegellack) 60%, #6E1F1A);
+    box-shadow: 0 4px 14px rgba(43,36,24,0.45), inset 0 0 0 3px rgba(241,234,218,0.25), inset 0 0 0 7px rgba(110,31,26,0.6);
+    color: #F1EADA;
+    font-family: var(--schrift-auszeichnung);
+    font-size: 2rem;
+    line-height: 1;
+    transition: transform 0.12s ease;
+    z-index: 20;
+  }
+  .siegel:active { transform: scale(0.93); }
+  .siegel:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+  .siegel[hidden] { display: none; }
+
+  /* ── Zettel (Dialoge) ──────────────────────────── */
+  .schleier {
+    position: fixed;
+    inset: 0;
+    background: rgba(43, 36, 24, 0.45);
+    display: none;
+    justify-content: center;
+    align-items: flex-end;
+    z-index: 30;
+  }
+  .schleier.offen { display: flex; }
+
+  .zettel-dialog {
+    width: 100%;
+    max-width: 430px;
+    max-height: 86vh;
+    max-height: 86dvh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.55 0 0 0 0 0.48 0 0 0 0 0.35 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E"),
+      var(--papier);
+    border-radius: 3px 3px 0 0;
+    box-shadow: 0 -6px 24px rgba(0,0,0,0.35), inset 0 0 40px rgba(43,36,24,0.08);
+    padding: 20px 20px calc(24px + env(safe-area-inset-bottom));
+  }
+
+  .zettel-titel {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.72rem;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--tinte-blass);
+    margin-bottom: 16px;
+  }
+  .zettel-titel::before, .zettel-titel::after {
+    content: ""; flex: 1; height: 1px; background: var(--linie);
+  }
+
+  .feldgruppe { margin-bottom: 16px; }
+  .feldgruppe label {
+    display: block;
+    font-style: italic;
+    font-size: 0.8rem;
+    color: var(--tinte-blass);
+    margin-bottom: 5px;
+  }
+  .feld {
+    width: 100%;
+    background: var(--papier-dunkel);
+    border: 1px solid var(--linie);
+    border-radius: 3px;
+    padding: 10px 12px;
+    font-size: 1rem;
+    color: var(--tinte);
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .feld.betrag {
+    font-family: var(--schrift-auszeichnung);
+    font-size: 2rem;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    padding: 8px 14px;
+  }
+  .feld::placeholder { color: var(--tinte-blass); opacity: 0.6; }
+
+  .postenwahl { border-top: 1.5px solid var(--tinte); }
+  .wahl-posten {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    padding: 13px 2px;
+    border-bottom: 1px solid var(--linie);
+    text-align: left;
+    font-size: 1rem;
+  }
+  .wahl-posten .w-name { font-weight: 500; }
+  .wahl-posten .w-rest {
+    font-style: italic;
+    font-size: 0.8rem;
+    color: var(--tinte-blass);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .wahl-posten .w-rest.rot { color: var(--siegellack); }
+  .wahl-posten:active { background: rgba(43,36,24,0.06); }
+
+  .knopfzeile {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-top: 18px;
+  }
+  .knopf {
+    border: 1px solid var(--tinte);
+    border-radius: 3px;
+    padding: 10px 18px;
+    font-size: 0.92rem;
+    background: var(--papier-dunkel);
+    color: var(--tinte);
+  }
+  .knopf.primaer { background: var(--kontor-gruen); color: var(--papier); border-color: var(--kontor-gruen); }
+  .knopf.rot { color: var(--siegellack); border-color: var(--siegellack); background: none; }
+  .knopf:active { transform: translateY(1px); }
+  .leise {
+    font-style: italic;
+    font-size: 0.85rem;
+    color: var(--tinte-blass);
+    padding: 8px 2px;
+    text-decoration: underline;
+    text-decoration-color: var(--linie);
+    text-underline-offset: 3px;
+  }
+  .leise.rot { color: var(--siegellack); text-decoration-color: rgba(140,43,37,0.4); }
+
+  .eintragsliste { margin-top: 6px; }
+  .eintragszeile {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+    padding: 9px 2px;
+    border-bottom: 1px solid var(--linie);
+    font-size: 0.9rem;
+  }
+  .eintragszeile .e-datum { font-style: italic; color: var(--tinte-blass); font-size: 0.8rem; white-space: nowrap; }
+  .eintragszeile .e-betrag { font-variant-numeric: tabular-nums; font-weight: 500; margin-left: auto; }
+  .eintragszeile button {
+    font-style: italic;
+    font-size: 0.78rem;
+    color: var(--tinte-blass);
+    white-space: nowrap;
+    padding: 2px 0 2px 6px;
+  }
+  .eintragszeile button.bestaetigen { color: var(--siegellack); }
+
+  .blattzeile {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    padding: 12px 2px;
+    border-bottom: 1px solid var(--linie);
+    text-align: left;
+    font-size: 0.98rem;
+  }
+  .blattzeile .b-summe { font-style: italic; font-size: 0.82rem; color: var(--tinte-blass); font-variant-numeric: tabular-nums; }
+  .blattzeile.aktuell .b-name::after { content: " — aktuell"; font-style: italic; font-weight: 400; color: var(--tinte-blass); font-size: 0.8rem; }
+
+  .hinweistext {
+    font-style: italic;
+    font-size: 0.85rem;
+    color: var(--tinte-blass);
+    margin: 10px 0 14px;
+    line-height: 1.5;
+  }
+  .hinweistext b { font-style: normal; color: var(--tinte); }
+
+  /* ── „Verbucht."-Vermerk ───────────────────────── */
+  .quittung {
+    position: fixed;
+    left: 50%;
+    bottom: calc(110px + env(safe-area-inset-bottom));
+    transform: translateX(-50%);
+    background: var(--papier);
+    border: 1px solid var(--linie);
+    border-radius: 3px;
+    box-shadow: 0 3px 12px rgba(43,36,24,0.3);
+    padding: 10px 22px;
+    font-style: italic;
+    font-size: 0.95rem;
+    color: var(--tinte);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 40;
+  }
+  .quittung.sichtbar { opacity: 1; }
+
+  /* ── Vermerkstreifen (Beweggrund nach dem Verbuchen) ── */
+  .streifen {
+    position: fixed;
+    left: 50%;
+    bottom: calc(96px + env(safe-area-inset-bottom));
+    transform: translateX(-50%);
+    width: calc(100% - 20px);
+    max-width: 410px;
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.55 0 0 0 0 0.48 0 0 0 0 0.35 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E"),
+      var(--papier);
+    border: 1px solid var(--linie);
+    border-radius: 3px;
+    box-shadow: 0 4px 16px rgba(43,36,24,0.35);
+    padding: 10px 12px 12px;
+    z-index: 25;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+  .streifen.sichtbar { opacity: 1; pointer-events: auto; }
+  .streifen-kopf {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+    font-style: italic;
+    font-size: 0.82rem;
+    color: var(--tinte-blass);
+    margin-bottom: 8px;
+  }
+  .streifen-kopf b { font-style: normal; color: var(--tinte); font-weight: 600; }
+  .streifen-kopf button {
+    font-style: italic;
+    font-size: 0.8rem;
+    color: var(--tinte-blass);
+    white-space: nowrap;
+    text-decoration: underline;
+    text-decoration-color: var(--linie);
+    text-underline-offset: 3px;
+  }
+  .streifen-reihe {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+  .streifen-reihe::-webkit-scrollbar { display: none; }
+
+  .stempel {
+    flex: 0 0 auto;
+    border: 1px solid var(--linie);
+    border-radius: 3px;
+    background: var(--papier-dunkel);
+    color: var(--tinte);
+    font-size: 0.85rem;
+    padding: 7px 11px;
+    white-space: nowrap;
+  }
+  .stempel:active { background: rgba(43,36,24,0.12); }
+  .stempel.gewaehlt {
+    background: var(--kontor-gruen);
+    color: var(--papier);
+    border-color: var(--kontor-gruen);
+  }
+
+  /* ── Vermerk am Eintrag (Posten-Detail) ── */
+  .eintragszeile { flex-wrap: wrap; }
+  .e-vermerk {
+    flex-basis: 100%;
+    text-align: left;
+    font-style: italic;
+    font-size: 0.78rem;
+    color: var(--tinte-blass);
+    padding: 2px 0 0 0;
+  }
+  .e-vermerk.leer { text-decoration: underline; text-decoration-color: var(--linie); text-underline-offset: 3px; }
+  .vermerk-editor {
+    flex-basis: 100%;
+    padding: 8px 0 4px;
+  }
+  .vermerk-editor .streifen-reihe { margin-bottom: 8px; }
+  .vermerk-editor .editor-zeile {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .vermerk-editor .editor-zeile button {
+    font-style: italic;
+    font-size: 0.8rem;
+    color: var(--tinte-blass);
+    text-decoration: underline;
+    text-decoration-color: var(--linie);
+    text-underline-offset: 3px;
+  }
+
+  /* ── Beweggründe verwalten ── */
+  .bg-zeile {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    padding: 12px 2px;
+    border-bottom: 1px solid var(--linie);
+    text-align: left;
+    font-size: 0.98rem;
+  }
+  .bg-zeile .b-standard { font-style: italic; font-size: 0.8rem; color: var(--tinte-blass); white-space: nowrap; }
+  .bg-zeile.inaktiv .b-name { color: var(--tinte-blass); }
+
+  .wahl2 { display: flex; gap: 8px; }
+  .wahl2 button {
+    flex: 1;
+    border: 1px solid var(--linie);
+    border-radius: 3px;
+    background: var(--papier-dunkel);
+    padding: 9px 10px;
+    font-size: 0.9rem;
+  }
+  .wahl2 button.gewaehlt {
+    background: var(--kontor-gruen);
+    color: var(--papier);
+    border-color: var(--kontor-gruen);
+  }
+
+  /* ── Eingangskorb ── */
+  .korb-karte {
+    border: 1px solid var(--linie);
+    border-radius: 3px;
+    background: var(--papier-dunkel);
+    padding: 12px 14px;
+    margin-bottom: 14px;
+  }
+  .korb-kopf {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .korb-kopf .k-datum { font-style: italic; font-size: 0.82rem; color: var(--tinte-blass); }
+  .korb-kopf .k-betrag {
+    font-family: var(--schrift-auszeichnung);
+    font-size: 1.6rem;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .korb-kopf .k-betrag.haben { color: var(--haben-gruen); }
+  .korb-empf { font-weight: 600; font-size: 0.98rem; margin-top: 4px; }
+  .korb-zweck {
+    font-size: 0.82rem;
+    color: var(--tinte-blass);
+    margin-top: 3px;
+    line-height: 1.45;
+    word-break: break-word;
+  }
+  .korb-zaehler {
+    font-style: italic;
+    font-size: 0.82rem;
+    color: var(--tinte-blass);
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  .korb-abschnitt {
+    font-style: italic;
+    font-size: 0.8rem;
+    color: var(--tinte-blass);
+    margin: 10px 0 4px;
+  }
+
+  .aufgaben-vermerk {
+    margin-top: 14px;
+    text-align: center;
+  }
+  .aufgaben-vermerk button {
+    font-style: italic;
+    font-size: 0.88rem;
+    color: var(--tinte);
+    text-decoration: underline;
+    text-decoration-color: var(--linie);
+    text-underline-offset: 3px;
+  }
+
+  .zuordnung-zeile { margin-bottom: 12px; }
+  .zuordnung-zeile .z-feld {
+    font-style: italic;
+    font-size: 0.8rem;
+    color: var(--tinte-blass);
+    margin-bottom: 5px;
+  }
+
+  /* ── Regelvorschlag & Automatik-Kennzeichnung ── */
+  .regelvorschlag {
+    border: 1px solid var(--linie);
+    border-radius: 3px;
+    background: var(--papier-dunkel);
+    padding: 9px 12px;
+    margin-bottom: 12px;
+    font-style: italic;
+    font-size: 0.84rem;
+    color: var(--tinte-blass);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .regelvorschlag b { font-style: normal; color: var(--tinte); }
+  .rv-knoepfe { display: flex; gap: 12px; white-space: nowrap; }
+  .rv-knoepfe button {
+    font-style: italic;
+    font-size: 0.84rem;
+    color: var(--tinte);
+    text-decoration: underline;
+    text-decoration-color: var(--linie);
+    text-underline-offset: 3px;
+  }
+  .rv-knoepfe button:last-child { color: var(--tinte-blass); }
+
+  .e-auto {
+    flex-basis: 100%;
+    font-style: italic;
+    font-size: 0.75rem;
+    color: var(--tinte-blass);
+    padding-top: 2px;
+  }
+
+  /* ── Einnahmen ── */
+  .einnahme-zeile {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: baseline;
+    padding: 12px 2px;
+    border-bottom: 1px solid var(--linie);
+    text-align: left;
+    background: none;
+    border-left: none; border-right: none; border-top: none;
+  }
+  .einnahme-zeile .name { font-weight: 500; font-size: 0.98rem; color: var(--tinte); }
+  .einnahme-zeile .name em { font-weight: 400; font-size: 0.8rem; color: var(--tinte-blass); }
+  .einnahme-zeile .e-summe {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: var(--haben-gruen);
+  }
+
+  .korb-fuss {
+    text-align: center;
+    margin-top: 4px;
+    padding-top: 10px;
+    border-top: 1px solid var(--linie);
+  }
+  .korb-fuss button {
+    font-style: italic;
+    font-size: 0.82rem;
+    color: var(--tinte-blass);
+    text-decoration: underline;
+    text-decoration-color: var(--linie);
+    text-underline-offset: 3px;
+  }
+
+  /* ── Kasse ── */
+  .kassenzeile {
+    text-align: right;
+    padding: 6px 2px 0;
+  }
+  .kassenzeile button {
+    font-style: italic;
+    font-size: 0.84rem;
+    color: var(--tinte-blass);
+  }
+  .kassenzeile b {
+    font-style: normal;
+    color: var(--tinte);
+    font-variant-numeric: tabular-nums;
+    border-bottom: 1px solid var(--linie);
+    padding-bottom: 1px;
+  }
+  .eintragszeile .e-betrag.haben { color: var(--haben-gruen); }
+
+  /* ── Vormerkbuch ── */
+  .wunsch-zeile {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    align-items: baseline;
+    padding: 11px 2px;
+    border-bottom: 1px solid var(--linie);
+    text-align: left;
+    background: none;
+    border-left: none; border-right: none; border-top: none;
+  }
+  .wunsch-zeile .w-titel { font-weight: 500; font-size: 0.98rem; color: var(--tinte); }
+  .wunsch-zeile .w-betrag {
+    font-variant-numeric: tabular-nums;
+    font-size: 0.92rem;
+    color: var(--tinte-blass);
+  }
+  .wunsch-zeile .w-ziel,
+  .wunsch-zeile .w-notiz {
+    grid-column: 1 / -1;
+    font-style: italic;
+    font-size: 0.78rem;
+    color: var(--tinte-blass);
+    padding-top: 2px;
+  }
+  .korb-fuss .trenner { color: var(--linie); }
+
+  /* ── Schuldenverlauf ── */
+  .verlauf {
+    border-bottom: 1px solid var(--linie);
+    padding: 6px 0 4px;
+  }
+  .federstrich {
+    display: block;
+    width: 100%;
+    height: 90px;
+  }
+  .verlauf-marken {
+    display: flex;
+    justify-content: space-between;
+    font-style: italic;
+    font-size: 0.76rem;
+    color: var(--tinte-blass);
+    padding-top: 5px;
+  }
+  .einnahme-zeile .e-summe.schuld { color: var(--tinte); }
+
+  /* ── Haushaltskonto-Planung ── */
+  .plan-zeile {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: baseline;
+    padding: 9px 2px;
+    border-bottom: 1px solid var(--linie);
+    font-size: 0.94rem;
+  }
+  .plan-zeile .p-betrag { font-variant-numeric: tabular-nums; }
+  .plan-zeile.abzug .p-name { font-style: italic; color: var(--tinte-blass); }
+  .plan-zwischensumme {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    padding: 10px 2px;
+    border-bottom: 1.5px solid var(--tinte);
+    font-size: 0.94rem;
+    font-weight: 600;
+  }
+  .plan-zwischensumme .p-betrag { font-variant-numeric: tabular-nums; }
+
+  /* ── Rückschau ── */
+  .rueck-satz {
+    font-size: 0.94rem;
+    line-height: 1.5;
+    padding: 8px 2px 6px;
+  }
+  .rueck-satz b { font-weight: 600; }
+  .rueck-fuss {
+    font-style: italic;
+    font-size: 0.8rem;
+    color: var(--tinte-blass);
+    padding: 6px 2px 0;
+    line-height: 1.45;
+  }
+  .rueck-zeile {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 12px;
+    align-items: baseline;
+    padding: 11px 2px 4px;
+  }
+  .rueck-zeile .r-name { font-size: 0.96rem; }
+  .rueck-zeile .r-anzahl,
+  .rueck-zeile .r-summe {
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    min-width: 56px;
+  }
+  .rueck-zeile .r-summe { font-weight: 600; }
+  .rueck-zeile .r-rest {
+    grid-column: 1 / -1;
+    font-style: italic;
+    font-size: 0.78rem;
+    color: var(--tinte-blass);
+    padding-bottom: 7px;
+    border-bottom: 1px solid var(--linie);
+  }
+  .rueck-zeile.schmal { padding-bottom: 8px; border-bottom: 1px solid var(--linie); }
+  .tintenlinie.ruecklinie { margin: 5px 0 3px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .siegel, .knopf, .quittung, .streifen { transition: none; }
+  }
+</style>
+</head>
+<body>
+<div class="buch">
+  <header class="deckel">
+    <div class="wortmarke">Finanz<span class="amp">&nbsp;·&nbsp;</span>Contor</div>
+    <div class="untertitel">Hauptbuch des Hauses</div>
+  </header>
+
+  <main class="seite" id="seite"></main>
+</div>
+
+<button class="siegel" id="siegel" aria-label="Neuen Eintrag verbuchen">+</button>
+
+<div class="streifen" id="streifen" role="region" aria-label="Beweggrund vermerken"></div>
+
+<div class="schleier" id="schleier">
+  <div class="zettel-dialog" id="zettel" role="dialog" aria-modal="true"></div>
+</div>
+
+<div class="quittung" id="quittung" role="status">Verbucht.</div>
+
+<script>
+'use strict';
+
+/* ════════════════ Datenhaltung ════════════════ */
+
+const SPEICHER_SCHLUESSEL = 'fc_data_v1';
+const SCHEMA_VERSION = 2;
+const EINNAHME_ID = 'k_einnahme'; // Sammelposten für Gutschriften ohne eigene Zuordnung
+const ABHEBUNG_ID = 'k_bargeldabhebung'; // Pseudo-Posten: erhöht die Kasse, nie budgetwirksam
+
+function startBeweggruende() {
+  return [
+    { id: 'g_geplant',      name: 'Geplanter Kauf',    geplantStandard: true,  aktiv: true, reihenfolge: 1 },
+    { id: 'g_beduerfnis',   name: 'Bedürfnis',         geplantStandard: true,  aktiv: true, reihenfolge: 2 },
+    { id: 'g_ersatz',       name: 'Ersatzbeschaffung', geplantStandard: true,  aktiv: true, reihenfolge: 3 },
+    { id: 'g_geschenk',     name: 'Geschenk',          geplantStandard: true,  aktiv: true, reihenfolge: 4 },
+    { id: 'g_impuls',       name: 'Impulskauf',        geplantStandard: false, aktiv: true, reihenfolge: 5 },
+    { id: 'g_kompensation', name: 'Kompensationskauf', geplantStandard: false, aktiv: true, reihenfolge: 6 },
+    { id: 'g_belohnung',    name: 'Belohnung',         geplantStandard: false, aktiv: true, reihenfolge: 7 },
+    { id: 'g_sozial',       name: 'Sozialer Anlass',   geplantStandard: false, aktiv: true, reihenfolge: 8 },
+    { id: 'g_bequem',       name: 'Bequemlichkeit',    geplantStandard: false, aktiv: true, reihenfolge: 9 }
+  ];
+}
+
+function leererBestand() {
+  return {
+    schemaVersion: SCHEMA_VERSION,
+    settings: {
+      monatsstart: 1,
+      statusSchwellen: { knapp: 0.85 },
+      letzteSicherung: null,
+      ort: 'Konstanz',
+      importZuordnung: {},
+      planung: { restbestand: null, korrektur: 0, korrekturGrund: '', stand: null }
+    },
+    kategorien: [],
+    buchungen: [],
+    regeln: [],
+    beweggruende: startBeweggruende(),
+    wunschgruppen: [],
+    wuensche: [],
+    bargeld: { bestand: 0, bewegungen: [] },
+    kredite: []
+  };
+}
+
+let daten = ladeDaten();
+
+function ladeDaten() {
+  try {
+    const roh = localStorage.getItem(SPEICHER_SCHLUESSEL);
+    if (!roh) return leererBestand();
+    const d = JSON.parse(roh);
+    if (!d || typeof d.schemaVersion !== 'number') return leererBestand();
+    return migriere(d);
+  } catch (e) {
+    return leererBestand();
+  }
+}
+
+function migriere(d) {
+  // Additive Felder aus Schema 1 absichern.
+  const basis = leererBestand();
+  d.settings = Object.assign(basis.settings, d.settings || {});
+  if (!d.settings.statusSchwellen || typeof d.settings.statusSchwellen.knapp !== 'number') {
+    d.settings.statusSchwellen = Object.assign({ knapp: 0.85 }, d.settings.statusSchwellen || {});
+  }
+  if (!d.settings.importZuordnung || typeof d.settings.importZuordnung !== 'object') {
+    d.settings.importZuordnung = {};
+  }
+  if (!d.settings.planung || typeof d.settings.planung !== 'object') {
+    d.settings.planung = { restbestand: null, korrektur: 0, korrekturGrund: '', stand: null };
+  }
+  d.kategorien = (d.kategorien || []).map(k => Object.assign({ archiviert: false, reihenfolge: 0 }, k));
+  d.buchungen = d.buchungen || [];
+  d.regeln = d.regeln || [];
+  d.bargeld = d.bargeld || basis.bargeld;
+  d.kredite = d.kredite || [];
+
+  // Migration Schema 1 -> 2 (Reflexionsebene). Idempotent.
+  if (!Array.isArray(d.beweggruende) || d.beweggruende.length === 0) {
+    d.beweggruende = startBeweggruende();
+  }
+  if (!Array.isArray(d.wunschgruppen)) d.wunschgruppen = [];
+  if (!Array.isArray(d.wuensche)) d.wuensche = [];
+  // Sammelposten nachziehen, falls Altbestand auf ihn verweist (v0.3/v0.4).
+  if (d.buchungen.some(b => b.kategorieId === EINNAHME_ID) && !d.kategorien.some(k => k.id === EINNAHME_ID)) {
+    d.kategorien.push({
+      id: EINNAHME_ID, name: 'Einnahme (ohne Zuordnung)', typ: 'einnahme',
+      konto: 'giro', monatsbudget: 0, reihenfolge: 0, archiviert: false
+    });
+  }
+  // beweggrundId / geplant / wunschId bleiben an Bestandsbuchungen ungesetzt (null gleichwertig).
+  d.schemaVersion = SCHEMA_VERSION;
+  return d;
+}
+
+function speichere() {
+  localStorage.setItem(SPEICHER_SCHLUESSEL, JSON.stringify(daten));
+}
+
+function neueId(praefix) {
+  return praefix + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+/* ════════════════ Hilfen: Zahl & Datum ════════════════ */
+
+const euroFormat = new Intl.NumberFormat('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+function euro(n) { return euroFormat.format(n) + ' €'; }
+function euroOhneZeichen(n) { return euroFormat.format(n); }
+
+function parseBetrag(text) {
+  if (typeof text !== 'string') return NaN;
+  let t = text.trim().replace(/\s/g, '').replace(/€/g, '');
+  t = t.replace(/[−–—]/g, '-').replace(/^\+/, '');
+  if (!t) return NaN;
+  t = t.replace(/\./g, '').replace(',', '.');
+  const n = Number(t);
+  return isFinite(n) ? n : NaN;
+}
+
+const MONATE = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+
+function heuteISO() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function aktuellesBlatt() { return heuteISO().slice(0, 7); }
+function blattName(blatt) {
+  const [j, m] = blatt.split('-').map(Number);
+  return MONATE[m - 1] + (j !== new Date().getFullYear() ? ' ' + j : '');
+}
+function blattNameLang(blatt) {
+  const [j, m] = blatt.split('-').map(Number);
+  return MONATE[m - 1] + ' ' + j;
+}
+function tageImMonat(blatt) {
+  const [j, m] = blatt.split('-').map(Number);
+  return new Date(j, m, 0).getDate();
+}
+function datumLang(iso) {
+  const [j, m, t] = iso.split('-').map(Number);
+  return t + '. ' + MONATE[m - 1] + ' ' + j;
+}
+function datumKurz(iso) {
+  const [, m, t] = iso.split('-').map(Number);
+  return t + '.' + String(m).padStart(2, '0') + '.';
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+/* ════════════════ Berechnungen ════════════════ */
+
+function buchungenImBlatt(blatt) {
+  return daten.buchungen.filter(b => b.datum.slice(0, 7) === blatt);
+}
+
+function istBetrag(kategorieId, blatt) {
+  let summe = 0;
+  for (const b of daten.buchungen) {
+    if (b.kategorieId === kategorieId && b.datum.slice(0, 7) === blatt && b.betrag < 0) {
+      summe += -b.betrag;
+    }
+  }
+  for (const c of daten.bargeld.bewegungen) {
+    if (c.kategorieId === kategorieId && c.datum.slice(0, 7) === blatt && c.betrag < 0) {
+      summe += -c.betrag;
+    }
+  }
+  return summe;
+}
+
+/* ── Bargeld ── */
+
+function tageSeitLetzterSicherung() {
+  const ls = daten.settings.letzteSicherung;
+  if (!ls) return null;
+  const dann = new Date(String(ls).slice(0, 10) + 'T00:00:00');
+  const heute = new Date(heuteISO() + 'T00:00:00');
+  if (isNaN(dann.getTime())) return null;
+  return Math.max(0, Math.round((heute - dann) / 86400000));
+}
+
+function kassenBestand() {  let bestand = 0;
+  for (const b of daten.buchungen) {
+    if (b.kategorieId === ABHEBUNG_ID) bestand += Math.abs(b.betrag);
+  }
+  for (const c of daten.bargeld.bewegungen) {
+    bestand += c.betrag;
+  }
+  return Math.round(bestand * 100) / 100;
+}
+
+function istAusgabePosten(k) {
+  return k && k.typ !== 'einnahme' && k.id !== EINNAHME_ID && k.id !== ABHEBUNG_ID;
+}
+function istEinnahmePosten(k) {
+  return k && (k.typ === 'einnahme' || k.id === EINNAHME_ID) && k.id !== ABHEBUNG_ID;
+}
+function ausgabePosten() {
+  return daten.kategorien.filter(k => istAusgabePosten(k) && !k.archiviert)
+    .sort((a, b) => (a.reihenfolge || 0) - (b.reihenfolge || 0) || a.name.localeCompare(b.name, 'de'));
+}
+function einnahmePosten() {
+  return daten.kategorien.filter(k => istEinnahmePosten(k) && !k.archiviert)
+    .sort((a, b) => (a.reihenfolge || 0) - (b.reihenfolge || 0) || a.name.localeCompare(b.name, 'de'));
+}
+
+function sichtbarePosten(blatt) {
+  const aktiv = daten.kategorien.filter(k => !k.archiviert && istAusgabePosten(k));
+  const archivierteMitEintraegen = daten.kategorien.filter(k =>
+    k.archiviert && istAusgabePosten(k) && buchungenImBlatt(blatt).some(b => b.kategorieId === k.id)
+  );
+  return aktiv.concat(archivierteMitEintraegen)
+    .sort((a, b) => (a.reihenfolge || 0) - (b.reihenfolge || 0) || a.name.localeCompare(b.name, 'de'));
+}
+
+function blattZahlen(blatt) {
+  const posten = sichtbarePosten(blatt);
+  let soll = 0, ist = 0;
+  for (const p of posten) {
+    if (!p.archiviert) soll += p.monatsbudget || 0;
+    ist += istBetrag(p.id, blatt);
+  }
+  return { soll, ist, verfuegbar: soll - ist };
+}
+
+function alleBlaetter() {
+  const menge = new Set(daten.buchungen.map(b => b.datum.slice(0, 7)));
+  menge.add(aktuellesBlatt());
+  return Array.from(menge).sort().reverse();
+}
+
+/* ════════════════ Ansicht: Hauptbuch ════════════════ */
+
+let angezeigtesBlatt = aktuellesBlatt();
+
+function render() {
+  const seite = document.getElementById('seite');
+  const blatt = angezeigtesBlatt;
+  const istAktuell = blatt === aktuellesBlatt();
+  const posten = sichtbarePosten(blatt);
+  const zahlen = blattZahlen(blatt);
+  const heute = new Date();
+  const tagHeute = heute.getDate();
+  const tImM = tageImMonat(blatt);
+  const restTage = tImM - tagHeute;
+  const monatsquote = tagHeute / tImM;
+  const schwelleKnapp = (daten.settings.statusSchwellen && daten.settings.statusSchwellen.knapp) || 0.85;
+
+  let html = '';
+
+  /* Datumszeile */
+  html += '<div class="datumszeile">';
+  html += '<span>' + escapeHtml(daten.settings.ort || '') + (daten.settings.ort ? ', den ' : 'Den ') + '<b>' + datumLang(heuteISO()) + '</b></span>';
+  html += '<button type="button" onclick="oeffneBlattwahl()" aria-label="Frühere Blätter ansehen">Blatt <b>' + escapeHtml(blattName(blatt)) + '</b></button>';
+  html += '</div>';
+
+  /* Saldo-Kopf */
+  const ueberzogenGesamt = zahlen.verfuegbar < 0;
+  html += '<section class="saldo-kopf">';
+  html += '<div class="zettel">' + (istAktuell ? 'Verfügbar diesen Monat' : 'Verblieben im ' + escapeHtml(blattNameLang(blatt))) + '</div>';
+  const v = Math.abs(zahlen.verfuegbar);
+  const vGanz = Math.trunc(v);
+  const vNach = Math.round((v - vGanz) * 100);
+  html += '<div class="saldo-betrag' + (ueberzogenGesamt ? ' ueberzogen' : '') + '">'
+       + (ueberzogenGesamt ? '−' : '') + euroFormat.format(vGanz).replace(/,00$/, '')
+       + '<small>,' + String(vNach).padStart(2, '0') + ' €</small></div>';
+  if (istAktuell) {
+    if (ueberzogenGesamt) {
+      html += '<div class="frei rot">von ' + euro(zahlen.soll) + ' — überzogen um ' + euro(v) + '</div>';
+    } else {
+      html += '<div class="frei">von ' + euro(zahlen.soll) + ' — der Kasse ' + (restTage === 1 ? 'verbleibt 1 Tag' : 'verbleiben ' + restTage + ' Tage') + '</div>';
+    }
+  } else {
+    html += '<div class="frei neutral">von ' + euro(zahlen.soll) + ' — Blatt geschlossen</div>';
+  }
+  html += '</section>';
+
+  /* Postenliste */
+  html += '<div class="buchtitel">Hauptbuch · Posten</div>';
+
+  if (posten.length === 0) {
+    html += '<p class="vermerk">Noch kein Posten angelegt.<br>Das Hauptbuch wartet auf seine erste Zeile.</p>';
+    const korbLeer = korbListe().length;
+    if (korbLeer > 0) {
+      html += '<div class="aufgaben-vermerk"><button type="button" onclick="oeffneKorb()">'
+           + (korbLeer === 1 ? 'Ein Eintrag wartet' : korbLeer + ' Einträge warten') + ' im Eingangskorb.</button></div>';
+    }
+    html += '<div class="fusszeile"><button type="button" onclick="oeffnePostenNeu()">Posten anlegen</button>'
+         + '<span class="trenner">·</span><button type="button" onclick="oeffneEinlesen()">Einlesen</button>'
+         + '<span class="trenner">·</span><button type="button" onclick="oeffneVerwaltung()">Verwaltung</button></div>';
+    seite.innerHTML = html;
+    document.getElementById('siegel').hidden = true;
+    return;
+  }
+
+  html += '<div class="spaltenkopf"><span>Posten</span><span>Ist</span><span>Soll</span></div>';
+
+  for (const p of posten) {
+    const ist = istBetrag(p.id, blatt);
+    const soll = p.monatsbudget || 0;
+    const quote = soll > 0 ? ist / soll : (ist > 0 ? 2 : 0);
+    const ueberzogen = quote > 1;
+    const breite = Math.min(quote, 1) * 100;
+    const rest = soll - ist;
+
+    let restText;
+    if (ueberzogen) {
+      restText = 'Überzogen um ' + euro(ist - soll) + ' — Vermerk in roter Tinte';
+    } else if (quote >= schwelleKnapp) {
+      restText = 'Verbleiben ' + euro(rest) + ' — knapp';
+    } else if (istAktuell && quote > monatsquote) {
+      restText = 'Verbleiben ' + euro(rest) + ' — läuft schneller als das Blatt';
+    } else if (quote <= monatsquote || !istAktuell) {
+      restText = 'Verbleiben ' + euro(rest) + (istAktuell ? ' — im Rahmen' : '');
+    } else {
+      restText = 'Verbleiben ' + euro(rest);
+    }
+
+    html += '<button type="button" class="posten' + (ueberzogen ? ' ueberzogen' : '') + '" onclick="oeffnePostenDetail(\'' + p.id + '\')" aria-label="Posten ' + escapeHtml(p.name) + ' ansehen">';
+    html += '<span class="name">' + escapeHtml(p.name) + (p.archiviert ? ' <em>— archiviert</em>' : '') + '</span>';
+    html += '<span class="ist">' + euroOhneZeichen(ist) + '</span>';
+    html += '<span class="soll">/ ' + euroFormat.format(soll).replace(/,00$/, '') + '</span>';
+    html += '<div class="tintenlinie"><i style="--w:' + breite.toFixed(1) + '%"></i></div>';
+    html += '<div class="rest">' + restText + '</div>';
+    html += '</button>';
+  }
+
+  /* Abschluss */
+  html += '<div class="abschluss"><span>Summe der Ausgaben</span><span class="betrag">' + euro(zahlen.ist) + '</span></div>';
+
+  /* Kasse (nur wenn Bargeld im Spiel ist) */
+  const kasse = kassenBestand();
+  const kasseGenutzt = kasse !== 0 || daten.bargeld.bewegungen.length > 0
+                       || daten.buchungen.some(b => b.kategorieId === ABHEBUNG_ID);
+  if (kasseGenutzt) {
+    html += '<div class="kassenzeile"><button type="button" onclick="oeffneKasse()">In der Kasse: <b>'
+         + euro(kasse) + '</b></button></div>';
+  }
+
+  /* Vormerkungen — stiller Summenvermerk, nie budgetwirksam */
+  const vorgemerkt = vorgemerktSumme();
+  if (vorgemerkt > 0 && istAktuell) {
+    html += '<div class="kassenzeile"><button type="button" onclick="oeffneVormerkbuch()">Vorgemerkt: <b>'
+         + euro(vorgemerkt) + '</b></button></div>';
+  }
+
+  /* Vermerk */
+  const blattBuchungen = buchungenImBlatt(blatt).concat(
+    daten.bargeld.bewegungen.filter(c => c.datum.slice(0, 7) === blatt && c.kategorieId)
+  );
+  if (blattBuchungen.length === 0) {
+    html += '<p class="vermerk">Ein neues Blatt. Noch kein Eintrag verzeichnet.</p>';
+  } else if (!istAktuell) {
+    html += '<p class="vermerk">Blatt geschlossen. Geprüft und für richtig befunden.</p>';
+  } else {
+    const heuteEintraege = blattBuchungen.filter(b => b.datum === heuteISO()).length;
+    if (heuteEintraege === 0) {
+      html += '<p class="vermerk">Geprüft und für richtig befunden — heute noch kein Eintrag.</p>';
+    } else {
+      html += '<p class="vermerk">Heute ' + (heuteEintraege === 1 ? 'ein Eintrag' : heuteEintraege + ' Einträge') + ' verbucht.</p>';
+    }
+  }
+
+  /* Aufgaben-Vermerk (Eingangskorb) */
+  const korbAnzahl = korbListe().length;
+  if (korbAnzahl > 0 && istAktuell) {
+    html += '<div class="aufgaben-vermerk"><button type="button" onclick="oeffneKorb()">'
+         + (korbAnzahl === 1 ? 'Ein Eintrag wartet' : korbAnzahl + ' Einträge warten') + ' im Eingangskorb.</button></div>';
+  }
+
+  /* Sicherungs-Erinnerung (F7.3) — stiller Randvermerk, keine Mahnung */
+  const tageSeitSicherung = tageSeitLetzterSicherung();
+  if (istAktuell && tageSeitSicherung !== null && tageSeitSicherung >= 14) {
+    html += '<div class="aufgaben-vermerk"><button type="button" onclick="oeffneSicherung()">'
+         + (tageSeitSicherung === null ? '' : 'Die letzte Sicherung liegt ' + tageSeitSicherung + ' Tage zurück.')
+         + '</button></div>';
+  } else if (istAktuell && tageSeitSicherung === null && daten.buchungen.length >= 10) {
+    html += '<div class="aufgaben-vermerk"><button type="button" onclick="oeffneSicherung()">Noch keine Sicherung verzeichnet.</button></div>';
+  }
+
+  /* Fußzeile */
+  html += '<div class="fusszeile">';
+  html += '<button type="button" onclick="oeffneEinlesen()">Einlesen</button>';
+  html += '<span class="trenner">·</span>';
+  html += '<button type="button" onclick="oeffneVerwaltung()">Verwaltung</button>';
+  html += '</div>';
+
+  seite.innerHTML = html;
+  document.getElementById('siegel').hidden = !istAktuell;
+}
+
+/* ════════════════ Zettel (Dialoge) ════════════════ */
+
+const schleier = document.getElementById('schleier');
+const zettel = document.getElementById('zettel');
+
+function oeffneZettel(html) {
+  schliesseStreifen();
+  zettel.innerHTML = html;
+  schleier.classList.add('offen');
+}
+function schliesseZettel() {
+  schleier.classList.remove('offen');
+  zettel.innerHTML = '';
+  vermerkEditorFuer = null;
+}
+schleier.addEventListener('click', e => { if (e.target === schleier) schliesseZettel(); });
+
+function zeigeQuittung(text) {
+  const q = document.getElementById('quittung');
+  q.textContent = text;
+  q.classList.add('sichtbar');
+  setTimeout(() => q.classList.remove('sichtbar'), 1400);
+}
+
+/* ── Eintrag (Siegel) ── */
+
+let eintragBar = false;
+
+function oeffneEintrag() {
+  const posten = ausgabePosten();
+  if (posten.length === 0) { oeffnePostenNeu(); return; }
+
+  const blatt = aktuellesBlatt();
+  let html = '<div class="zettel-titel">Eintrag</div>';
+  html += '<div class="feldgruppe"><label for="eintrag-betrag">Betrag in Euro</label>';
+  html += '<input class="feld betrag" id="eintrag-betrag" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off"></div>';
+  html += '<div class="feldgruppe"><label>Bezahlt</label><div class="wahl2">';
+  html += '<button type="button" id="ez-konto" class="' + (eintragBar ? '' : 'gewaehlt') + '" onclick="waehleEintragsart(false)">vom Konto</button>';
+  html += '<button type="button" id="ez-bar" class="' + (eintragBar ? 'gewaehlt' : '') + '" onclick="waehleEintragsart(true)">bar</button>';
+  html += '</div>';
+  if (eintragBar) {
+    html += '<p class="hinweistext" style="margin:6px 0 0">In der Kasse: <b>' + euro(kassenBestand()) + '</b></p>';
+  }
+  html += '</div>';
+  html += '<div class="feldgruppe" style="margin-bottom:6px"><label>Posten wählen — verbucht sofort</label></div>';
+  html += '<div class="postenwahl">';
+  for (const p of posten) {
+    const rest = (p.monatsbudget || 0) - istBetrag(p.id, blatt);
+    html += '<button type="button" class="wahl-posten" onclick="verbuche(\'' + p.id + '\')">'
+         + '<span class="w-name">' + escapeHtml(p.name) + '</span>'
+         + '<span class="w-rest' + (rest < 0 ? ' rot' : '') + '">' + (rest < 0 ? 'überzogen um ' + euro(-rest) : 'verbleiben ' + euro(rest)) + '</span>'
+         + '</button>';
+  }
+  html += '</div>';
+  html += '<div class="knopfzeile"><button type="button" class="leise" onclick="schliesseZettel()">Abbrechen</button></div>';
+  oeffneZettel(html);
+  const feld = document.getElementById('eintrag-betrag');
+  feld.focus();
+}
+
+function waehleEintragsart(bar) {
+  eintragBar = bar;
+  const betrag = document.getElementById('eintrag-betrag').value;
+  oeffneEintrag();
+  document.getElementById('eintrag-betrag').value = betrag;
+}
+
+/* ── Beweggrund-Hilfen ── */
+
+function aktiveBeweggruende() {
+  return daten.beweggruende.filter(g => g.aktiv)
+    .sort((a, b) => (a.reihenfolge || 0) - (b.reihenfolge || 0));
+}
+function beweggrund(id) {
+  return daten.beweggruende.find(g => g.id === id) || null;
+}
+function vermerkText(b) {
+  if (!b.beweggrundId) return null;
+  const g = beweggrund(b.beweggrundId);
+  const name = g ? g.name : 'Unbekannter Beweggrund';
+  if (b.geplant === true) return name + ' — geplant';
+  if (b.geplant === false) return name + ' — ungeplant';
+  return name;
+}
+
+/* ── Vermerkstreifen (nach dem Verbuchen) ── */
+
+let streifenTimer = null;
+
+function zeigeVermerkstreifen(eintragId, istBar) {
+  const s = document.getElementById('streifen');
+  const bar = istBar ? 'true' : 'false';
+  let html = '<div class="streifen-kopf"><span><b>Verbucht.</b> Ein Beweggrund? — freiwillig</span>'
+           + '<button type="button" onclick="schliesseStreifen()">übergehen</button></div>';
+  html += '<div class="streifen-reihe">';
+  for (const g of aktiveBeweggruende()) {
+    html += '<button type="button" class="stempel" onclick="vermerkeVomStreifen(\'' + eintragId + '\', \'' + g.id + '\', ' + bar + ')">' + escapeHtml(g.name) + '</button>';
+  }
+  html += '</div>';
+  s.innerHTML = html;
+  s.classList.add('sichtbar');
+  if (streifenTimer) clearTimeout(streifenTimer);
+  streifenTimer = setTimeout(schliesseStreifen, 8000);
+}
+
+function schliesseStreifen() {
+  if (streifenTimer) { clearTimeout(streifenTimer); streifenTimer = null; }
+  const s = document.getElementById('streifen');
+  s.classList.remove('sichtbar');
+}
+
+function findeEintrag(id, istBar) {
+  return istBar
+    ? daten.bargeld.bewegungen.find(x => x.id === id)
+    : daten.buchungen.find(x => x.id === id);
+}
+
+function vermerkeVomStreifen(eintragId, beweggrundId, istBar) {
+  const b = findeEintrag(eintragId, istBar);
+  const g = beweggrund(beweggrundId);
+  if (b && g) {
+    b.beweggrundId = g.id;
+    b.geplant = g.geplantStandard;
+    speichere();
+  }
+  schliesseStreifen();
+  zeigeQuittung('Vermerkt.');
+}
+
+function verbuche(kategorieId) {
+  const feld = document.getElementById('eintrag-betrag');
+  const betrag = parseBetrag(feld.value);
+  if (!(betrag > 0)) {
+    feld.focus();
+    feld.select && feld.select();
+    return;
+  }
+  const kat = daten.kategorien.find(k => k.id === kategorieId);
+
+  if (eintragBar) {
+    const bewegung = {
+      id: neueId('c'),
+      datum: heuteISO(),
+      betrag: -betrag,
+      kategorieId: kategorieId,
+      notiz: '',
+      beweggrundId: null,
+      geplant: null
+    };
+    daten.bargeld.bewegungen.push(bewegung);
+    speichere();
+    schliesseZettel();
+    render();
+    zeigeVermerkstreifen(bewegung.id, true);
+    return;
+  }
+
+  const neueBuchung = {
+    id: neueId('b'),
+    datum: heuteISO(),
+    betrag: -betrag,
+    text: kat ? kat.name : '',
+    konto: kat ? (kat.konto || 'haushalt') : 'haushalt',
+    kategorieId: kategorieId,
+    quelle: 'manuell',
+    autoZugeordnet: false,
+    beweggrundId: null,
+    geplant: null,
+    wunschId: null
+  };
+  daten.buchungen.push(neueBuchung);
+  speichere();
+  schliesseZettel();
+  render();
+  zeigeVermerkstreifen(neueBuchung.id);
+}
+
+/* ── Posten anlegen ── */
+
+function oeffnePostenNeu() {
+  let html = '<div class="zettel-titel">Neuer Posten</div>';
+  html += '<div class="feldgruppe"><label for="pn-name">Bezeichnung</label>';
+  html += '<input class="feld" id="pn-name" type="text" autocomplete="off" placeholder="z. B. Lebensmittel"></div>';
+  html += '<div class="feldgruppe"><label for="pn-soll">Soll je Blatt (Euro)</label>';
+  html += '<input class="feld" id="pn-soll" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00"></div>';
+  html += '<div class="knopfzeile">';
+  html += '<button type="button" class="leise" onclick="schliesseZettel()">Abbrechen</button>';
+  html += '<button type="button" class="knopf primaer" onclick="legePostenAn()">Anlegen</button>';
+  html += '</div>';
+  oeffneZettel(html);
+  document.getElementById('pn-name').focus();
+}
+
+function legePostenAn() {
+  const name = document.getElementById('pn-name').value.trim();
+  const soll = parseBetrag(document.getElementById('pn-soll').value);
+  if (!name) { document.getElementById('pn-name').focus(); return; }
+  if (!(soll >= 0)) { document.getElementById('pn-soll').focus(); return; }
+  const maxReihe = daten.kategorien.reduce((m, k) => Math.max(m, k.reihenfolge || 0), 0);
+  daten.kategorien.push({
+    id: neueId('k'),
+    name: name,
+    typ: 'ausgabe',
+    konto: 'haushalt',
+    monatsbudget: soll,
+    reihenfolge: maxReihe + 1,
+    archiviert: false
+  });
+  speichere();
+  schliesseZettel();
+  render();
+  zeigeQuittung('Posten angelegt.');
+}
+
+/* ── Posten-Detail (umbenennen, Soll, archivieren, Einträge) ── */
+
+function oeffnePostenDetail(kategorieId) {
+  const p = daten.kategorien.find(k => k.id === kategorieId);
+  if (!p) return;
+  const blatt = angezeigtesBlatt;
+  const istAktuell = blatt === aktuellesBlatt();
+  const eintraege = buchungenImBlatt(blatt)
+    .filter(b => b.kategorieId === kategorieId)
+    .map(b => ({ e: b, bar: false }))
+    .concat(daten.bargeld.bewegungen
+      .filter(c => c.kategorieId === kategorieId && c.datum.slice(0, 7) === blatt)
+      .map(c => ({ e: c, bar: true })))
+    .sort((a, b) => b.e.datum.localeCompare(a.e.datum) || b.e.id.localeCompare(a.e.id));
+
+  let html = '<div class="zettel-titel">Posten</div>';
+  html += '<div class="feldgruppe"><label for="pd-name">Bezeichnung</label>';
+  html += '<input class="feld" id="pd-name" type="text" autocomplete="off" value="' + escapeHtml(p.name) + '"></div>';
+  html += '<div class="feldgruppe"><label for="pd-soll">Soll je Blatt (Euro)</label>';
+  html += '<input class="feld" id="pd-soll" type="text" inputmode="decimal" autocomplete="off" value="' + euroOhneZeichen(p.monatsbudget || 0) + '"></div>';
+  const pKonto = p.konto || 'haushalt';
+  postenEditorKonto = pKonto;
+  html += '<div class="feldgruppe"><label>Läuft über</label><div class="wahl2">';
+  html += '<button type="button" id="pd-haushalt" class="' + (pKonto === 'haushalt' ? 'gewaehlt' : '') + '" onclick="waehlePostenKonto(\'haushalt\')">Haushaltskonto</button>';
+  html += '<button type="button" id="pd-giro" class="' + (pKonto === 'giro' ? 'gewaehlt' : '') + '" onclick="waehlePostenKonto(\'giro\')">Girokonto</button>';
+  html += '</div></div>';
+  html += '<div class="knopfzeile" style="margin-top:4px;margin-bottom:8px">';
+  if (p.archiviert) {
+    html += '<button type="button" class="leise" onclick="archivierePosten(\'' + p.id + '\', false)">Wieder aufnehmen</button>';
+  } else {
+    html += '<button type="button" class="leise" id="pd-arch" onclick="archivierenBestaetigen(\'' + p.id + '\')">Posten archivieren</button>';
+  }
+  html += '<button type="button" class="knopf primaer" onclick="speicherePosten(\'' + p.id + '\')">Übernehmen</button>';
+  html += '</div>';
+
+  html += '<div class="buchtitel" style="margin-top:14px">Einträge · Blatt ' + escapeHtml(blattName(blatt)) + '</div>';
+  if (eintraege.length === 0) {
+    html += '<p class="hinweistext" style="text-align:center">Kein Eintrag auf diesem Blatt.</p>';
+  } else {
+    html += '<div class="eintragsliste">';
+    for (const eintrag of eintraege) {
+      const b = eintrag.e, bar = eintrag.bar;
+      const barFlag = bar ? 'true' : 'false';
+      html += '<div class="eintragszeile" id="ez-' + b.id + '">';
+      html += '<span class="e-datum">' + datumKurz(b.datum) + '</span>';
+      html += '<span class="e-betrag">' + euro(-b.betrag) + '</span>';
+      if (istAktuell) {
+        if (!bar) {
+          html += '<button type="button" onclick="oeffneUmbuchen(\'' + b.id + '\', \'' + p.id + '\')">umbuchen</button>';
+        }
+        html += '<button type="button" onclick="streicheEintrag(\'' + b.id + '\', \'' + p.id + '\', this, ' + barFlag + ')">streichen</button>';
+      }
+      if (bar) {
+        html += '<span class="e-auto">bar bezahlt</span>';
+      } else if (b.autoZugeordnet) {
+        html += '<span class="e-auto">automatisch zugeordnet</span>';
+      }
+      const vt = vermerkText(b);
+      if (vermerkEditorFuer === b.id) {
+        html += baueVermerkEditor(b, p.id, bar);
+      } else if (vt) {
+        html += '<button type="button" class="e-vermerk" onclick="oeffneVermerkEditor(\'' + b.id + '\', \'' + p.id + '\')">' + escapeHtml(vt) + '</button>';
+      } else {
+        html += '<button type="button" class="e-vermerk leer" onclick="oeffneVermerkEditor(\'' + b.id + '\', \'' + p.id + '\')">Vermerk setzen</button>';
+      }
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+  html += '<div class="knopfzeile"><button type="button" class="leise" onclick="schliesseZettel()">Schließen</button></div>';
+  oeffneZettel(html);
+}
+
+/* ── Umbuchen (Eintrag auf anderen Posten verschieben) ── */
+
+function oeffneUmbuchen(buchungId, herkunftId) {
+  const b = daten.buchungen.find(x => x.id === buchungId);
+  if (!b) return;
+  const posten = daten.kategorien.filter(k => istAusgabePosten(k) && !k.archiviert && k.id !== b.kategorieId)
+    .sort((x, y) => (x.reihenfolge || 0) - (y.reihenfolge || 0) || x.name.localeCompare(y.name, 'de'));
+  const blatt = b.datum.slice(0, 7);
+
+  let html = '<div class="zettel-titel">Umbuchen</div>';
+  html += '<div class="korb-karte">';
+  html += '<div class="korb-kopf"><span class="k-datum">' + datumLang(b.datum) + '</span>';
+  html += '<span class="k-betrag">' + euro(Math.abs(b.betrag)) + '</span></div>';
+  if (b.text) html += '<div class="korb-zweck">' + escapeHtml(b.text.length > 140 ? b.text.slice(0, 140) + '…' : b.text) + '</div>';
+  html += '</div>';
+  html += '<p class="hinweistext">Jetzt verbucht auf <b>' + escapeHtml(postenName(b.kategorieId)) + '</b>. Neuen Posten wählen:</p>';
+  html += '<div class="postenwahl">';
+  for (const p of posten) {
+    const rest = (p.monatsbudget || 0) - istBetrag(p.id, blatt);
+    html += '<button type="button" class="wahl-posten" onclick="fuehreUmbuchungAus(\'' + b.id + '\', \'' + p.id + '\', \'' + herkunftId + '\')">'
+         + '<span class="w-name">' + escapeHtml(p.name) + '</span>'
+         + '<span class="w-rest' + (rest < 0 ? ' rot' : '') + '">' + (rest < 0 ? 'überzogen um ' + euro(-rest) : 'verbleiben ' + euro(rest)) + '</span></button>';
+  }
+  html += '</div>';
+  html += '<div class="knopfzeile"><button type="button" class="leise" onclick="oeffnePostenDetail(\'' + herkunftId + '\')">Abbrechen</button></div>';
+  oeffneZettel(html);
+}
+
+function fuehreUmbuchungAus(buchungId, zielId, herkunftId) {
+  const b = daten.buchungen.find(x => x.id === buchungId);
+  if (!b) return;
+  b.kategorieId = zielId;
+  b.autoZugeordnet = false;
+  speichere();
+  render();
+  zeigeQuittung('Umgebucht.');
+  oeffnePostenDetail(herkunftId);
+}
+
+/* ── Vermerk am Eintrag (nachträglich, F8.4) ── */
+
+let vermerkEditorFuer = null;
+
+function baueVermerkEditor(b, kategorieId, istBar) {
+  const barFlag = istBar ? 'true' : 'false';
+  let html = '<div class="vermerk-editor">';
+  html += '<div class="streifen-reihe">';
+  for (const g of aktiveBeweggruende()) {
+    const gewaehlt = b.beweggrundId === g.id;
+    html += '<button type="button" class="stempel' + (gewaehlt ? ' gewaehlt' : '') + '" onclick="setzeVermerk(\'' + b.id + '\', \'' + g.id + '\', \'' + kategorieId + '\', ' + barFlag + ')">' + escapeHtml(g.name) + '</button>';
+  }
+  html += '</div>';
+  html += '<div class="editor-zeile">';
+  if (b.beweggrundId) {
+    const gp = b.geplant === true ? 'geplant' : (b.geplant === false ? 'ungeplant' : 'ohne Kennzeichen');
+    html += '<button type="button" onclick="dreheGeplant(\'' + b.id + '\', \'' + kategorieId + '\', ' + barFlag + ')">' + gp + ' — umdrehen</button>';
+    html += '<button type="button" onclick="entferneVermerk(\'' + b.id + '\', \'' + kategorieId + '\', ' + barFlag + ')">Vermerk entfernen</button>';
+  }
+  html += '<button type="button" onclick="schliesseVermerkEditor(\'' + kategorieId + '\')">fertig</button>';
+  html += '</div></div>';
+  return html;
+}
+
+function oeffneVermerkEditor(buchungId, kategorieId) {
+  vermerkEditorFuer = buchungId;
+  oeffnePostenDetail(kategorieId);
+}
+
+function schliesseVermerkEditor(kategorieId) {
+  vermerkEditorFuer = null;
+  oeffnePostenDetail(kategorieId);
+}
+
+function setzeVermerk(eintragId, beweggrundId, kategorieId, istBar) {
+  const b = findeEintrag(eintragId, istBar);
+  const g = beweggrund(beweggrundId);
+  if (b && g && b.beweggrundId !== g.id) {
+    b.beweggrundId = g.id;
+    b.geplant = g.geplantStandard;
+    speichere();
+  }
+  oeffnePostenDetail(kategorieId);
+}
+
+function dreheGeplant(eintragId, kategorieId, istBar) {
+  const b = findeEintrag(eintragId, istBar);
+  if (b) {
+    b.geplant = b.geplant === true ? false : true;
+    speichere();
+  }
+  oeffnePostenDetail(kategorieId);
+}
+
+function entferneVermerk(eintragId, kategorieId, istBar) {
+  const b = findeEintrag(eintragId, istBar);
+  if (b) {
+    b.beweggrundId = null;
+    b.geplant = null;
+    speichere();
+  }
+  vermerkEditorFuer = null;
+  oeffnePostenDetail(kategorieId);
+}
+
+let postenEditorKonto = 'haushalt';
+
+function waehlePostenKonto(konto) {
+  postenEditorKonto = konto;
+  const h = document.getElementById('pd-haushalt'), g = document.getElementById('pd-giro');
+  if (h && g) {
+    h.classList.toggle('gewaehlt', konto === 'haushalt');
+    g.classList.toggle('gewaehlt', konto === 'giro');
+  }
+}
+
+function speicherePosten(kategorieId) {
+  const p = daten.kategorien.find(k => k.id === kategorieId);
+  if (!p) return;
+  const name = document.getElementById('pd-name').value.trim();
+  const soll = parseBetrag(document.getElementById('pd-soll').value);
+  if (!name) { document.getElementById('pd-name').focus(); return; }
+  if (!(soll >= 0)) { document.getElementById('pd-soll').focus(); return; }
+  p.name = name;
+  p.monatsbudget = soll;
+  p.konto = postenEditorKonto;
+  speichere();
+  schliesseZettel();
+  render();
+  zeigeQuittung('Verbucht.');
+}
+
+function archivierenBestaetigen(kategorieId) {
+  const knopf = document.getElementById('pd-arch');
+  if (!knopf) return;
+  if (knopf.dataset.bereit === '1') {
+    archivierePosten(kategorieId, true);
+  } else {
+    knopf.dataset.bereit = '1';
+    knopf.textContent = 'Wirklich archivieren? Nochmals tippen.';
+    knopf.classList.add('rot');
+  }
+}
+
+function archivierePosten(kategorieId, archivieren) {
+  const p = daten.kategorien.find(k => k.id === kategorieId);
+  if (!p) return;
+  p.archiviert = archivieren;
+  speichere();
+  schliesseZettel();
+  render();
+  zeigeQuittung(archivieren ? 'Posten archiviert.' : 'Posten wieder aufgenommen.');
+}
+
+function streicheEintrag(eintragId, kategorieId, knopf, istBar) {
+  if (knopf.dataset.bereit !== '1') {
+    knopf.dataset.bereit = '1';
+    knopf.textContent = 'wirklich streichen?';
+    knopf.classList.add('bestaetigen');
+    return;
+  }
+  if (istBar) {
+    const i = daten.bargeld.bewegungen.findIndex(c => c.id === eintragId);
+    if (i >= 0) daten.bargeld.bewegungen.splice(i, 1);
+  } else {
+    const i = daten.buchungen.findIndex(b => b.id === eintragId);
+    if (i >= 0) daten.buchungen.splice(i, 1);
+  }
+  speichere();
+  oeffnePostenDetail(kategorieId);
+  render();
+  zeigeQuittung('Eintrag gestrichen.');
+}
+
+/* ── Beweggründe verwalten ── */
+
+function oeffneBeweggruende() {
+  const aktive = aktiveBeweggruende();
+  const inaktive = daten.beweggruende.filter(g => !g.aktiv)
+    .sort((a, b) => (a.reihenfolge || 0) - (b.reihenfolge || 0));
+
+  let html = '<div class="zettel-titel">Beweggründe</div>';
+  html += '<p class="hinweistext">Beweggründe sind freiwillige Randvermerke an Einträgen. Sie werden nie gelöscht, nur außer Gebrauch gestellt — bestehende Vermerke bleiben lesbar.</p>';
+  for (const g of aktive) {
+    html += '<button type="button" class="bg-zeile" onclick="oeffneBeweggrundEditor(\'' + g.id + '\')">';
+    html += '<span class="b-name">' + escapeHtml(g.name) + '</span>';
+    html += '<span class="b-standard">' + (g.geplantStandard ? 'geplant' : 'ungeplant') + '</span>';
+    html += '</button>';
+  }
+  if (inaktive.length > 0) {
+    html += '<div class="buchtitel" style="margin-top:16px">Ausser Gebrauch</div>';
+    for (const g of inaktive) {
+      html += '<button type="button" class="bg-zeile inaktiv" onclick="oeffneBeweggrundEditor(\'' + g.id + '\')">';
+      html += '<span class="b-name">' + escapeHtml(g.name) + '</span>';
+      html += '<span class="b-standard">wieder aufnehmen?</span>';
+      html += '</button>';
+    }
+  }
+  html += '<div class="knopfzeile">';
+  html += '<button type="button" class="leise" onclick="schliesseZettel()">Schließen</button>';
+  html += '<button type="button" class="knopf" onclick="oeffneBeweggrundEditor(null)">Beweggrund ergänzen</button>';
+  html += '</div>';
+  oeffneZettel(html);
+}
+
+let editorGeplantStandard = true;
+
+function oeffneBeweggrundEditor(beweggrundId) {
+  const g = beweggrundId ? beweggrund(beweggrundId) : null;
+  editorGeplantStandard = g ? g.geplantStandard : true;
+
+  let html = '<div class="zettel-titel">' + (g ? 'Beweggrund' : 'Neuer Beweggrund') + '</div>';
+  html += '<div class="feldgruppe"><label for="bg-name">Bezeichnung</label>';
+  html += '<input class="feld" id="bg-name" type="text" autocomplete="off" value="' + (g ? escapeHtml(g.name) : '') + '" placeholder="z. B. Vorratskauf"></div>';
+  html += '<div class="feldgruppe"><label>Gilt in der Regel als</label>';
+  html += '<div class="wahl2" id="bg-wahl">';
+  html += '<button type="button" id="bg-geplant" onclick="waehleGeplantStandard(true)">geplant</button>';
+  html += '<button type="button" id="bg-ungeplant" onclick="waehleGeplantStandard(false)">ungeplant</button>';
+  html += '</div></div>';
+  html += '<div class="knopfzeile">';
+  if (g && g.aktiv) {
+    html += '<button type="button" class="leise" id="bg-deakt" onclick="deaktivierenBestaetigen(\'' + g.id + '\')">Ausser Gebrauch stellen</button>';
+  } else if (g && !g.aktiv) {
+    html += '<button type="button" class="leise" onclick="aktiviereBeweggrund(\'' + g.id + '\')">Wieder aufnehmen</button>';
+  } else {
+    html += '<button type="button" class="leise" onclick="oeffneBeweggruende()">Zurück</button>';
+  }
+  html += '<button type="button" class="knopf primaer" onclick="speichereBeweggrund(' + (g ? '\'' + g.id + '\'' : 'null') + ')">Übernehmen</button>';
+  html += '</div>';
+  oeffneZettel(html);
+  zeichneGeplantWahl();
+  if (!g) document.getElementById('bg-name').focus();
+}
+
+function waehleGeplantStandard(wert) {
+  editorGeplantStandard = wert;
+  zeichneGeplantWahl();
+}
+
+function zeichneGeplantWahl() {
+  const jg = document.getElementById('bg-geplant');
+  const ng = document.getElementById('bg-ungeplant');
+  if (!jg || !ng) return;
+  jg.classList.toggle('gewaehlt', editorGeplantStandard === true);
+  ng.classList.toggle('gewaehlt', editorGeplantStandard === false);
+}
+
+function speichereBeweggrund(beweggrundId) {
+  const name = document.getElementById('bg-name').value.trim();
+  if (!name) { document.getElementById('bg-name').focus(); return; }
+  if (beweggrundId) {
+    const g = beweggrund(beweggrundId);
+    if (!g) return;
+    g.name = name;
+    g.geplantStandard = editorGeplantStandard;
+  } else {
+    const maxReihe = daten.beweggruende.reduce((m, g) => Math.max(m, g.reihenfolge || 0), 0);
+    daten.beweggruende.push({
+      id: neueId('g'),
+      name: name,
+      geplantStandard: editorGeplantStandard,
+      aktiv: true,
+      reihenfolge: maxReihe + 1
+    });
+  }
+  speichere();
+  oeffneBeweggruende();
+  zeigeQuittung('Verbucht.');
+}
+
+function deaktivierenBestaetigen(beweggrundId) {
+  const knopf = document.getElementById('bg-deakt');
+  if (!knopf) return;
+  if (knopf.dataset.bereit === '1') {
+    const g = beweggrund(beweggrundId);
+    if (g) { g.aktiv = false; speichere(); }
+    oeffneBeweggruende();
+    zeigeQuittung('Ausser Gebrauch gestellt.');
+  } else {
+    knopf.dataset.bereit = '1';
+    knopf.textContent = 'Wirklich? Nochmals tippen.';
+    knopf.classList.add('rot');
+  }
+}
+
+function aktiviereBeweggrund(beweggrundId) {
+  const g = beweggrund(beweggrundId);
+  if (g) { g.aktiv = true; speichere(); }
+  oeffneBeweggruende();
+  zeigeQuittung('Wieder aufgenommen.');
+}
+
+/* ── Regeln (automatische Zuordnung) ── */
+
+function aktiveRegeln() {
+  return daten.regeln.filter(r => r.aktiv);
+}
+
+function findeRegel(text) {
+  const t = (text || '').toLowerCase();
+  for (const r of aktiveRegeln()) {
+    const muster = (r.muster || '').toLowerCase().trim();
+    if (muster && t.includes(muster)) return r;
+  }
+  return null;
+}
+
+function musterVorschlag(text) {
+  // Erstes aussagekräftiges Wort des Empfängerteils.
+  const empf = (text || '').split(' · ')[0];
+  const woerter = empf.split(/[\s,.\/]+/).filter(w => w.length >= 3 && !/^\d+$/.test(w));
+  const uebergehen = ['visa', 'der', 'die', 'das', 'und', 'gmbh', 'ag', 'kg', 'ohg', 'mbh', 'europe', 'deutschland'];
+  for (const w of woerter) {
+    if (!uebergehen.includes(w.toLowerCase())) return w.toLowerCase();
+  }
+  return woerter.length ? woerter[0].toLowerCase() : '';
+}
+
+function postenName(kategorieId) {
+  if (kategorieId === EINNAHME_ID) return 'Einnahme (ohne Zuordnung)';
+  if (kategorieId === ABHEBUNG_ID) return 'Bargeldabhebung';
+  if (!kategorieId) return 'Kassensturz';
+  const k = daten.kategorien.find(x => x.id === kategorieId);
+  return k ? k.name : 'Unbekannt';
+}
+
+function oeffneRegeln() {
+  let html = '<div class="zettel-titel">Regeln</div>';
+  html += '<p class="hinweistext">Eine Regel ordnet eingelesene Buchungen selbsttätig einem Posten zu, wenn der Buchungstext das Muster enthält. Geprüft wird in dieser Reihenfolge; der erste Treffer gilt. Ein Beweggrund wird nie automatisch vergeben.</p>';
+  if (daten.regeln.length === 0) {
+    html += '<p class="vermerk">Noch keine Regel verzeichnet.</p>';
+  } else {
+    for (const r of daten.regeln) {
+      html += '<button type="button" class="bg-zeile' + (r.aktiv ? '' : ' inaktiv') + '" onclick="oeffneRegelEditor(\'' + r.id + '\')">';
+      html += '<span class="b-name">' + escapeHtml(r.muster) + '</span>';
+      html += '<span class="b-standard">' + (r.aktiv ? '→ ' + escapeHtml(postenName(r.kategorieId)) : 'ruht') + '</span>';
+      html += '</button>';
+    }
+  }
+  html += '<div class="knopfzeile">';
+  html += '<button type="button" class="leise" onclick="oeffneVerwaltung()">Zurück</button>';
+  html += '<button type="button" class="knopf" onclick="oeffneRegelEditor(null)">Regel anlegen</button>';
+  html += '</div>';
+  oeffneZettel(html);
+}
+
+let regelEditorPosten = null;
+
+function oeffneRegelEditor(regelId, musterVorbelegt, postenVorbelegt) {
+  const r = regelId ? daten.regeln.find(x => x.id === regelId) : null;
+  regelEditorPosten = r ? r.kategorieId : (postenVorbelegt || null);
+
+  let html = '<div class="zettel-titel">' + (r ? 'Regel' : 'Neue Regel') + '</div>';
+  html += '<div class="feldgruppe"><label for="rg-muster">Wenn der Buchungstext enthält</label>';
+  html += '<input class="feld" id="rg-muster" type="text" autocomplete="off" autocapitalize="none" value="'
+       + escapeHtml(r ? r.muster : (musterVorbelegt || '')) + '" placeholder="z. B. edeka"></div>';
+  html += '<div class="feldgruppe"><label>Dann verbuchen auf</label></div>';
+  html += '<div class="postenwahl">';
+  const posten = ausgabePosten();
+  for (const p of posten) {
+    html += '<button type="button" class="wahl-posten" onclick="waehleRegelPosten(\'' + p.id + '\')">'
+         + '<span class="w-name">' + escapeHtml(p.name) + '</span>'
+         + '<span class="w-rest">' + (regelEditorPosten === p.id ? 'gewählt' : '') + '</span></button>';
+  }
+  for (const p of einnahmePosten()) {
+    html += '<button type="button" class="wahl-posten" onclick="waehleRegelPosten(\'' + p.id + '\')">'
+         + '<span class="w-name">' + escapeHtml(p.name) + ' <em style="font-style:italic;font-size:0.8rem;color:var(--tinte-blass)">— Einnahme</em></span>'
+         + '<span class="w-rest">' + (regelEditorPosten === p.id ? 'gewählt' : '') + '</span></button>';
+  }
+  html += '<button type="button" class="wahl-posten" onclick="waehleRegelPosten(\'' + ABHEBUNG_ID + '\')">'
+       + '<span class="w-name">Bargeldabhebung <em style="font-style:italic;font-size:0.8rem;color:var(--tinte-blass)">— in die Kasse</em></span>'
+       + '<span class="w-rest">' + (regelEditorPosten === ABHEBUNG_ID ? 'gewählt' : '') + '</span></button>';
+  html += '</div>';
+  html += '<div class="knopfzeile">';
+  if (r) {
+    html += '<button type="button" class="leise" id="rg-loeschen" onclick="regelLoeschenBestaetigen(\'' + r.id + '\')">Löschen</button>';
+    html += '<button type="button" class="leise" onclick="regelUmschalten(\'' + r.id + '\')">' + (r.aktiv ? 'Ruhen lassen' : 'Wieder anwenden') + '</button>';
+  } else {
+    html += '<button type="button" class="leise" onclick="oeffneRegeln()">Zurück</button>';
+  }
+  html += '<button type="button" class="knopf primaer" onclick="speichereRegel(' + (r ? '\'' + r.id + '\'' : 'null') + ')">Übernehmen</button>';
+  html += '</div>';
+  oeffneZettel(html);
+  if (!r && !musterVorbelegt) document.getElementById('rg-muster').focus();
+}
+
+function waehleRegelPosten(kategorieId) {
+  regelEditorPosten = kategorieId;
+  zeichneRegelPostenwahl();
+}
+
+function zeichneRegelPostenwahl() {
+  const knoepfe = zettel.querySelectorAll('.wahl-posten');
+  knoepfe.forEach(k => {
+    const treffer = (k.getAttribute('onclick') || '').match(/'([^']+)'/);
+    const id = treffer ? treffer[1] : null;
+    const rest = k.querySelector('.w-rest');
+    if (rest) rest.textContent = (id === regelEditorPosten) ? 'gewählt' : '';
+  });
+}
+
+function speichereRegel(regelId) {
+  const muster = document.getElementById('rg-muster').value.trim();
+  if (!muster) { document.getElementById('rg-muster').focus(); return; }
+  if (!regelEditorPosten) { zeigeQuittung('Posten wählen.'); return; }
+  if (regelId) {
+    const r = daten.regeln.find(x => x.id === regelId);
+    if (!r) return;
+    r.muster = muster;
+    r.kategorieId = regelEditorPosten;
+  } else {
+    daten.regeln.push({
+      id: neueId('r'),
+      muster: muster,
+      feld: 'text',
+      kategorieId: regelEditorPosten,
+      aktiv: true
+    });
+  }
+  speichere();
+  oeffneRegeln();
+  zeigeQuittung('Verbucht.');
+}
+
+function regelUmschalten(regelId) {
+  const r = daten.regeln.find(x => x.id === regelId);
+  if (r) { r.aktiv = !r.aktiv; speichere(); }
+  oeffneRegeln();
+}
+
+function regelLoeschenBestaetigen(regelId) {
+  const knopf = document.getElementById('rg-loeschen');
+  if (!knopf) return;
+  if (knopf.dataset.bereit === '1') {
+    const i = daten.regeln.findIndex(x => x.id === regelId);
+    if (i >= 0) daten.regeln.splice(i, 1);
+    speichere();
+    oeffneRegeln();
+    zeigeQuittung('Regel gelöscht.');
+  } else {
+    knopf.dataset.bereit = '1';
+    knopf.textContent = 'Wirklich? Nochmals tippen.';
+    knopf.classList.add('rot');
+  }
+}
+
+function sichereSammelposten() {
+  // Der Sammelposten entsteht nur, wenn er gebraucht wird (Altbestand oder neue Gutschrift).
+  if (daten.kategorien.some(k => k.id === EINNAHME_ID)) return;
+  daten.kategorien.push({
+    id: EINNAHME_ID,
+    name: 'Einnahme (ohne Zuordnung)',
+    typ: 'einnahme',
+    konto: 'giro',
+    monatsbudget: 0,
+    reihenfolge: 0,
+    archiviert: false
+  });
+}
+
+/* ── Einnahmen ── */
+
+function einnahmenImBlatt(blatt) {
+  return daten.buchungen.filter(b => b.datum.slice(0, 7) === blatt && b.betrag > 0 && b.kategorieId);
+}
+
+function einnahmeSumme(kategorieId, blatt) {
+  let summe = 0;
+  for (const b of daten.buchungen) {
+    if (b.kategorieId === kategorieId && b.datum.slice(0, 7) === blatt && b.betrag > 0) summe += b.betrag;
+  }
+  return summe;
+}
+
+function oeffneEinnahmen(blatt) {
+  const bl = blatt || angezeigtesBlatt;
+  const posten = daten.kategorien.filter(k => istEinnahmePosten(k))
+    .sort((a, b) => (a.reihenfolge || 0) - (b.reihenfolge || 0) || a.name.localeCompare(b.name, 'de'));
+  const mitEintraegen = posten.filter(p => einnahmeSumme(p.id, bl) > 0 || (!p.archiviert && p.id !== EINNAHME_ID));
+  let gesamt = 0;
+  for (const p of posten) gesamt += einnahmeSumme(p.id, bl);
+
+  let html = '<div class="zettel-titel">Einnahmen · Blatt ' + escapeHtml(blattName(bl)) + '</div>';
+
+  if (posten.length === 0) {
+    html += '<p class="vermerk">Noch kein Einnahme-Posten angelegt.</p>';
+  } else {
+    html += '<div class="spaltenkopf"><span>Posten</span><span></span><span>Summe</span></div>';
+    for (const p of mitEintraegen) {
+      const summe = einnahmeSumme(p.id, bl);
+      html += '<button type="button" class="einnahme-zeile" onclick="oeffneEinnahmeDetail(\'' + p.id + '\')">';
+      html += '<span class="name">' + escapeHtml(p.name) + (p.archiviert ? ' <em>— archiviert</em>' : '') + '</span>';
+      html += '<span class="e-summe">' + euroOhneZeichen(summe) + '</span>';
+      html += '</button>';
+    }
+    html += '<div class="abschluss"><span>Summe der Einnahmen</span><span class="betrag">' + euro(gesamt) + '</span></div>';
+  }
+
+  html += '<div class="knopfzeile">';
+  html += '<button type="button" class="leise" onclick="oeffneVerwaltung()">Zurück</button>';
+  html += '<button type="button" class="knopf" onclick="oeffneEinnahmePostenNeu()">Posten anlegen</button>';
+  html += '</div>';
+  oeffneZettel(html);
+}
+
+function oeffneEinnahmePostenNeu() {
+  let html = '<div class="zettel-titel">Neuer Einnahme-Posten</div>';
+  html += '<div class="feldgruppe"><label for="en-name">Bezeichnung</label>';
+  html += '<input class="feld" id="en-name" type="text" autocomplete="off" placeholder="z. B. Gehalt"></div>';
+  html += '<p class="hinweistext">Einnahmen zählen in kein Budget. Sie werden verzeichnet und hier summiert.</p>';
+  html += '<div class="knopfzeile">';
+  html += '<button type="button" class="leise" onclick="oeffneEinnahmen()">Abbrechen</button>';
+  html += '<button type="button" class="knopf primaer" onclick="legeEinnahmePostenAn()">Anlegen</button>';
+  html += '</div>';
+  oeffneZettel(html);
+  document.getElementById('en-name').focus();
+}
+
+function legeEinnahmePostenAn() {
+  const name = document.getElementById('en-name').value.trim();
+  if (!name) { document.getElementById('en-name').focus(); return; }
+  const maxReihe = daten.kategorien.reduce((m, k) => Math.max(m, k.reihenfolge || 0), 0);
+  daten.kategorien.push({
+    id: neueId('k'),
+    name: name,
+    typ: 'einnahme',
+    konto: 'giro',
+    monatsbudget: 0,
+    reihenfolge: maxReihe + 1,
+    archiviert: false
+  });
+  speichere();
+  oeffneEinnahmen();
+  zeigeQuittung('Posten angelegt.');
+}
+
+function oeffneEinnahmeDetail(kategorieId) {
+  const p = daten.kategorien.find(k => k.id === kategorieId);
+  if (!p) return;
+  const bl = angezeigtesBlatt;
+  const eintraege = daten.buchungen
+    .filter(b => b.kategorieId === kategorieId && b.datum.slice(0, 7) === bl && b.betrag > 0)
+    .sort((a, b) => b.datum.localeCompare(a.datum) || b.id.localeCompare(a.id));
+
+  let html = '<div class="zettel-titel">Einnahme-Posten</div>';
+  if (p.id === EINNAHME_ID) {
+    html += '<p class="hinweistext"><b>' + escapeHtml(p.name) + '</b> — Sammelposten für Gutschriften ohne eigene Zuordnung. Einzelne Einträge lassen sich hier umbuchen.</p>';
+  } else {
+    html += '<div class="feldgruppe"><label for="ed-name">Bezeichnung</label>';
+    html += '<input class="feld" id="ed-name" type="text" autocomplete="off" value="' + escapeHtml(p.name) + '"></div>';
+    html += '<div class="knopfzeile" style="margin-top:4px;margin-bottom:8px">';
+    if (p.archiviert) {
+      html += '<button type="button" class="leise" onclick="archiviereEinnahmePosten(\'' + p.id + '\', false)">Wieder aufnehmen</button>';
+    } else {
+      html += '<button type="button" class="leise" id="ed-arch" onclick="einnahmeArchivierenBestaetigen(\'' + p.id + '\')">Posten archivieren</button>';
+    }
+    html += '<button type="button" class="knopf primaer" onclick="speichereEinnahmePosten(\'' + p.id + '\')">Übernehmen</button>';
+    html += '</div>';
+  }
+
+  html += '<div class="buchtitel" style="margin-top:14px">Einträge · Blatt ' + escapeHtml(blattName(bl)) + '</div>';
+  if (eintraege.length === 0) {
+    html += '<p class="hinweistext" style="text-align:center">Kein Eintrag auf diesem Blatt.</p>';
+  } else {
+    html += '<div class="eintragsliste">';
+    for (const b of eintraege) {
+      html += '<div class="eintragszeile">';
+      html += '<span class="e-datum">' + datumKurz(b.datum) + '</span>';
+      html += '<span class="e-betrag">' + euro(b.betrag) + '</span>';
+      html += '<button type="button" onclick="oeffneEinnahmeUmbuchen(\'' + b.id + '\', \'' + p.id + '\')">umbuchen</button>';
+      if (b.text) html += '<span class="e-auto">' + escapeHtml(b.text.length > 90 ? b.text.slice(0, 90) + '…' : b.text) + '</span>';
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+  html += '<div class="knopfzeile"><button type="button" class="leise" onclick="oeffneEinnahmen()">Zurück</button></div>';
+  oeffneZettel(html);
+}
+
+function speichereEinnahmePosten(kategorieId) {
+  const p = daten.kategorien.find(k => k.id === kategorieId);
+  if (!p) return;
+  const name = document.getElementById('ed-name').value.trim();
+  if (!name) { document.getElementById('ed-name').focus(); return; }
+  p.name = name;
+  speichere();
+  oeffneEinnahmen();
+  zeigeQuittung('Verbucht.');
+}
+
+function einnahmeArchivierenBestaetigen(kategorieId) {
+  const knopf = document.getElementById('ed-arch');
+  if (!knopf) return;
+  if (knopf.dataset.bereit === '1') {
+    archiviereEinnahmePosten(kategorieId, true);
+  } else {
+    knopf.dataset.bereit = '1';
+    knopf.textContent = 'Wirklich archivieren? Nochmals tippen.';
+    knopf.classList.add('rot');
+  }
+}
+
+function archiviereEinnahmePosten(kategorieId, archivieren) {
+  const p = daten.kategorien.find(k => k.id === kategorieId);
+  if (!p) return;
+  p.archiviert = archivieren;
+  speichere();
+  oeffneEinnahmen();
+  zeigeQuittung(archivieren ? 'Posten archiviert.' : 'Posten wieder aufgenommen.');
+}
+
+function oeffneEinnahmeUmbuchen(buchungId, herkunftId) {
+  const b = daten.buchungen.find(x => x.id === buchungId);
+  if (!b) return;
+  const posten = daten.kategorien.filter(k => istEinnahmePosten(k) && !k.archiviert && k.id !== b.kategorieId)
+    .sort((x, y) => (x.reihenfolge || 0) - (y.reihenfolge || 0) || x.name.localeCompare(y.name, 'de'));
+
+  let html = '<div class="zettel-titel">Umbuchen</div>';
+  html += '<div class="korb-karte">';
+  html += '<div class="korb-kopf"><span class="k-datum">' + datumLang(b.datum) + '</span>';
+  html += '<span class="k-betrag haben">+' + euro(b.betrag) + '</span></div>';
+  if (b.text) html += '<div class="korb-zweck">' + escapeHtml(b.text.length > 140 ? b.text.slice(0, 140) + '…' : b.text) + '</div>';
+  html += '</div>';
+  html += '<p class="hinweistext">Jetzt verbucht auf <b>' + escapeHtml(postenName(b.kategorieId)) + '</b>. Neuen Posten wählen:</p>';
+  if (posten.length === 0) {
+    html += '<p class="hinweistext" style="text-align:center">Kein weiterer Einnahme-Posten vorhanden.</p>';
+  } else {
+    html += '<div class="postenwahl">';
+    for (const p of posten) {
+      html += '<button type="button" class="wahl-posten" onclick="fuehreEinnahmeUmbuchungAus(\'' + b.id + '\', \'' + p.id + '\', \'' + herkunftId + '\')">'
+           + '<span class="w-name">' + escapeHtml(p.name) + '</span><span class="w-rest"></span></button>';
+    }
+    html += '</div>';
+  }
+  html += '<div class="knopfzeile"><button type="button" class="leise" onclick="oeffneEinnahmeDetail(\'' + herkunftId + '\')">Abbrechen</button></div>';
+  oeffneZettel(html);
+}
+
+function fuehreEinnahmeUmbuchungAus(buchungId, zielId, herkunftId) {
+  const b = daten.buchungen.find(x => x.id === buchungId);
+  if (!b) return;
+  b.kategorieId = zielId;
+  b.autoZugeordnet = false;
+  speichere();
+  zeigeQuittung('Umgebucht.');
+  oeffneEinnahmeDetail(herkunftId);
+}
+
+/* ── Kasse (Bargeldbestand) ── */
+
+function oeffneKasse() {
+  const bestand = kassenBestand();
+  const abhebungen = daten.buchungen.filter(b => b.kategorieId === ABHEBUNG_ID)
+    .map(b => ({ datum: b.datum, betrag: Math.abs(b.betrag), art: 'Abhebung', id: b.id, bar: false }));
+  const ausgaben = daten.bargeld.bewegungen
+    .map(c => ({ datum: c.datum, betrag: c.betrag, art: c.kategorieId === null ? 'Kassensturz' : postenName(c.kategorieId), id: c.id, bar: true }));
+  const alle = abhebungen.concat(ausgaben)
+    .sort((a, b) => b.datum.localeCompare(a.datum) || b.id.localeCompare(a.id))
+    .slice(0, 40);
+
+  let html = '<div class="zettel-titel">Kasse</div>';
+  html += '<section class="saldo-kopf" style="padding-top:0">';
+  html += '<div class="zettel">In der Kasse</div>';
+  html += '<div class="saldo-betrag' + (bestand < 0 ? ' ueberzogen' : '') + '">' + euro(bestand) + '</div>';
+  html += '</section>';
+
+  html += '<div class="buchtitel" style="margin-top:16px">Bewegungen</div>';
+  if (alle.length === 0) {
+    html += '<p class="vermerk">Noch keine Bewegung verzeichnet.</p>';
+    html += '<p class="hinweistext">Abhebungen erkennt die App über eine Regel auf den Posten „Bargeldabhebung". Barausgaben werden im Eintrag über „bar" erfasst.</p>';
+  } else {
+    html += '<div class="eintragsliste">';
+    for (const z of alle) {
+      html += '<div class="eintragszeile">';
+      html += '<span class="e-datum">' + datumKurz(z.datum) + '</span>';
+      html += '<span class="e-betrag' + (z.betrag > 0 ? ' haben' : '') + '">' + (z.betrag > 0 ? '+' : '−') + euro(Math.abs(z.betrag)) + '</span>';
+      html += '<span class="e-auto">' + escapeHtml(z.art) + '</span>';
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+
+  html += '<div class="knopfzeile">';
+  html += '<button type="button" class="leise" onclick="schliesseZettel()">Schließen</button>';
+  html += '<button type="button" class="knopf" onclick="oeffneKassensturz()">Kasse zählen</button>';
+  html += '</div>';
+  oeffneZettel(html);
+}
+
+function oeffneKassensturz() {
+  const bestand = kassenBestand();
+  let html = '<div class="zettel-titel">Kasse zählen</div>';
+  html += '<p class="hinweistext">Verzeichnet sind <b>' + euro(bestand) + '</b>. Den tatsächlich gezählten Betrag eintragen — die Differenz wird als Ausgleich verzeichnet, ohne Budgetwirkung.</p>';
+  html += '<div class="feldgruppe"><label for="ks-betrag">Gezählt</label>';
+  html += '<input class="feld betrag" id="ks-betrag" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off"></div>';
+  html += '<div class="knopfzeile">';
+  html += '<button type="button" class="leise" onclick="oeffneKasse()">Abbrechen</button>';
+  html += '<button type="button" class="knopf primaer" onclick="fuehreKassensturzAus()">Übernehmen</button>';
+  html += '</div>';
+  oeffneZettel(html);
+  document.getElementById('ks-betrag').focus();
+}
+
+function fuehreKassensturzAus() {
+  const feld = document.getElementById('ks-betrag');
+  const gezaehlt = parseBetrag(feld.value);
+  if (!isFinite(gezaehlt) || gezaehlt < 0) { feld.focus(); return; }
+  const bestand = kassenBestand();
+  const differenz = Math.round((gezaehlt - bestand) * 100) / 100;
+  if (differenz === 0) {
+    oeffneKasse();
+    zeigeQuittung('Kasse stimmt.');
+    return;
+  }
+  daten.bargeld.bewegungen.push({
+    id: neueId('c'),
+    datum: heuteISO(),
+    betrag: differenz,
+    kategorieId: null,   // ohne Posten = nie budgetwirksam
+    notiz: 'Kassensturz',
+    beweggrundId: null,
+    geplant: null
+  });
+  speichere();
+  render();
+  oeffneKasse();
+  zeigeQuittung('Kasse berichtigt.');
+}
+
+/* ── Vormerkbuch ── */
+
+const GEPLANTER_KAUF_ID = 'g_geplant';
+
+function offeneWuensche() {
+  return daten.wuensche.filter(w => w.status === 'offen');
+}
+
+function vorgemerktSumme() {
+  let summe = 0;
+  for (const w of offeneWuensche()) summe += (w.betrag || 0);
+  return summe;
+}
+
+function wunschgruppe(id) {
+  return daten.wunschgruppen.find(g => g.id === id) || null;
+}
+
+function oeffneVormerkbuch() {
+  const offen = offeneWuensche();
+  const gruppen = daten.wunschgruppen.slice()
+    .sort((a, b) => (a.reihenfolge || 0) - (b.reihenfolge || 0) || a.name.localeCompare(b.name, 'de'));
+
+  let html = '<div class="zettel-titel">Vormerkbuch</div>';
+
+  if (offen.length === 0 && gruppen.length === 0) {
+    html += '<p class="vermerk">Noch nichts vorgemerkt.</p>';
+    html += '<p class="hinweistext">Vormerkungen sind Anschaffungen, die noch bevorstehen. Sie zählen in kein Budget, solange sie nicht eingelöst sind.</p>';
+  } else {
+    const ohneGruppe = offen.filter(w => !w.gruppeId || !wunschgruppe(w.gruppeId));
+    for (const g of gruppen) {
+      const inGruppe = offen.filter(w => w.gruppeId === g.id);
+      html += '<div class="buchtitel" style="margin-top:16px">' + escapeHtml(g.name) + '</div>';
+      if (inGruppe.length === 0) {
+        html += '<p class="hinweistext" style="text-align:center;margin:6px 0">Keine offene Vormerkung.</p>';
+      } else {
+        html += baueWunschliste(inGruppe);
+      }
+    }
+    if (ohneGruppe.length > 0) {
+      html += '<div class="buchtitel" style="margin-top:16px">Ohne Gruppe</div>';
+      html += baueWunschliste(ohneGruppe);
+    }
+    const summe = vorgemerktSumme();
+    if (summe > 0) {
+      html += '<div class="abschluss"><span>Vorgemerkt</span><span class="betrag">' + euro(summe) + '</span></div>';
+      html += '<p class="vermerk">Nicht budgetwirksam — erst beim Einlösen.</p>';
+    }
+  }
+
+  html += '<div class="knopfzeile">';
+  html += '<button type="button" class="leise" onclick="oeffneVerwaltung()">Zurück</button>';
+  html += '<button type="button" class="knopf" onclick="oeffneWunschEditor(null)">Vormerken</button>';
+  html += '</div>';
+  html += '<div class="korb-fuss">';
+  html += '<button type="button" onclick="oeffneWunschgruppen()">Gruppen ordnen</button>';
+  html += '<span class="trenner"> · </span>';
+  html += '<button type="button" onclick="oeffneWunschArchiv()">Erledigtes</button>';
+  html += '</div>';
+  oeffneZettel(html);
+}
+
+function baueWunschliste(liste) {
+  let html = '';
+  for (const w of liste) {
+    html += '<button type="button" class="wunsch-zeile" onclick="oeffneWunschDetail(\'' + w.id + '\')">';
+    html += '<span class="w-titel">' + escapeHtml(w.titel) + '</span>';
+    html += '<span class="w-betrag">' + (w.betrag ? euroOhneZeichen(w.betrag) : '—') + '</span>';
+    if (w.postenId) {
+      html += '<span class="w-ziel">für ' + escapeHtml(postenName(w.postenId)) + '</span>';
+    }
+    if (w.notiz) {
+      html += '<span class="w-notiz">' + escapeHtml(w.notiz.length > 80 ? w.notiz.slice(0, 80) + '…' : w.notiz) + '</span>';
+    }
+    html += '</button>';
+  }
+  return html;
+}
+
+let wunschEditorGruppe = null;
+let wunschEditorPosten = null;
+
+function oeffneWunschEditor(wunschId) {
+  const w = wunschId ? daten.wuensche.find(x => x.id === wunschId) : null;
+  wunschEditorGruppe = w ? w.gruppeId : (daten.wunschgruppen.length === 1 ? daten.wunschgruppen[0].id : null);
+  wunschEditorPosten = w ? w.postenId : null;
+
+  let html = '<div class="zettel-titel">' + (w ? 'Vormerkung' : 'Neue Vormerkung') + '</div>';
+  html += '<div class="feldgruppe"><label for="wu-titel">Was</label>';
+  html += '<input class="feld" id="wu-titel" type="text" autocomplete="off" value="' + (w ? escapeHtml(w.titel) : '') + '" placeholder="z. B. Fahrradhelm"></div>';
+  html += '<div class="feldgruppe"><label for="wu-betrag">Geschätzter Betrag — freiwillig</label>';
+  html += '<input class="feld" id="wu-betrag" type="text" inputmode="decimal" autocomplete="off" value="' + (w && w.betrag ? euroOhneZeichen(w.betrag) : '') + '" placeholder="0,00"></div>';
+
+  html += '<div class="feldgruppe"><label>Gruppe — freiwillig</label><div class="streifen-reihe">';
+  for (const g of daten.wunschgruppen.sort((a, b) => (a.reihenfolge || 0) - (b.reihenfolge || 0))) {
+    html += '<button type="button" class="stempel' + (wunschEditorGruppe === g.id ? ' gewaehlt' : '') + '" onclick="waehleWunschGruppe(\'' + g.id + '\')">' + escapeHtml(g.name) + '</button>';
+  }
+  html += '<button type="button" class="stempel" onclick="oeffneWunschgruppeNeu()">+ Gruppe</button>';
+  html += '</div></div>';
+
+  html += '<div class="feldgruppe"><label>Ziel-Posten — freiwillig</label><div class="streifen-reihe">';
+  for (const p of ausgabePosten()) {
+    html += '<button type="button" class="stempel' + (wunschEditorPosten === p.id ? ' gewaehlt' : '') + '" onclick="waehleWunschPosten(\'' + p.id + '\')">' + escapeHtml(p.name) + '</button>';
+  }
+  html += '</div></div>';
+
+  html += '<div class="feldgruppe"><label for="wu-notiz">Notiz — freiwillig</label>';
+  html += '<input class="feld" id="wu-notiz" type="text" autocomplete="off" value="' + (w && w.notiz ? escapeHtml(w.notiz) : '') + '" placeholder=""></div>';
+
+  html += '<div class="knopfzeile">';
+  html += '<button type="button" class="leise" onclick="' + (w ? 'oeffneWunschDetail(\'' + w.id + '\')' : 'oeffneVormerkbuch()') + '">Abbrechen</button>';
+  html += '<button type="button" class="knopf primaer" onclick="speichereWunsch(' + (w ? '\'' + w.id + '\'' : 'null') + ')">Übernehmen</button>';
+  html += '</div>';
+  oeffneZettel(html);
+  if (!w) document.getElementById('wu-titel').focus();
+}
+
+function waehleWunschGruppe(gruppeId) {
+  wunschEditorGruppe = wunschEditorGruppe === gruppeId ? null : gruppeId;
+  zeichneWunschWahl();
+}
+
+function waehleWunschPosten(postenId) {
+  wunschEditorPosten = wunschEditorPosten === postenId ? null : postenId;
+  zeichneWunschWahl();
+}
+
+function zeichneWunschWahl() {
+  const reihen = zettel.querySelectorAll('.streifen-reihe');
+  reihen.forEach(reihe => {
+    reihe.querySelectorAll('.stempel').forEach(k => {
+      const treffer = (k.getAttribute('onclick') || '').match(/'([^']+)'/);
+      const id = treffer ? treffer[1] : null;
+      const istGruppe = (k.getAttribute('onclick') || '').includes('waehleWunschGruppe');
+      const istPosten = (k.getAttribute('onclick') || '').includes('waehleWunschPosten');
+      if (istGruppe) k.classList.toggle('gewaehlt', id === wunschEditorGruppe);
+      if (istPosten) k.classList.toggle('gewaehlt', id === wunschEditorPosten);
+    });
+  });
+}
+
+function speichereWunsch(wunschId) {
+  const titel = document.getElementById('wu-titel').value.trim();
+  if (!titel) { document.getElementById('wu-titel').focus(); return; }
+  const betragRoh = document.getElementById('wu-betrag').value.trim();
+  const betrag = betragRoh ? parseBetrag(betragRoh) : null;
+  if (betragRoh && !(betrag >= 0)) { document.getElementById('wu-betrag').focus(); return; }
+  const notiz = document.getElementById('wu-notiz').value.trim();
+
+  if (wunschId) {
+    const w = daten.wuensche.find(x => x.id === wunschId);
+    if (!w) return;
+    w.titel = titel;
+    w.betrag = betrag;
+    w.gruppeId = wunschEditorGruppe;
+    w.postenId = wunschEditorPosten;
+    w.notiz = notiz;
+  } else {
+    daten.wuensche.push({
+      id: neueId('w'),
+      titel: titel,
+      gruppeId: wunschEditorGruppe,
+      betrag: betrag,
+      postenId: wunschEditorPosten,
+      notiz: notiz,
+      erstellt: heuteISO(),
+      status: 'offen',
+      buchungId: null
+    });
+  }
+  speichere();
+  render();
+  oeffneVormerkbuch();
+  zeigeQuittung('Vorgemerkt.');
+}
+
+function oeffneWunschDetail(wunschId) {
+  const w = daten.wuensche.find(x => x.id === wunschId);
+  if (!w) return;
+
+  let html = '<div class="zettel-titel">Vormerkung</div>';
+  html += '<div class="korb-karte">';
+  html += '<div class="korb-kopf"><span class="k-datum">vorgemerkt am ' + datumLang(w.erstellt) + '</span>';
+  if (w.betrag) html += '<span class="k-betrag">' + euro(w.betrag) + '</span>';
+  html += '</div>';
+  html += '<div class="korb-empf">' + escapeHtml(w.titel) + '</div>';
+  const zusatz = [];
+  if (w.gruppeId && wunschgruppe(w.gruppeId)) zusatz.push(wunschgruppe(w.gruppeId).name);
+  if (w.postenId) zusatz.push('für ' + postenName(w.postenId));
+  if (zusatz.length) html += '<div class="korb-zweck">' + escapeHtml(zusatz.join(' · ')) + '</div>';
+  if (w.notiz) html += '<div class="korb-zweck">' + escapeHtml(w.notiz) + '</div>';
+  html += '</div>';
+
+  if (w.status === 'offen') {
+    html += '<div class="knopfzeile" style="justify-content:center;margin-top:14px">';
+    html += '<button type="button" class="knopf primaer" onclick="oeffneEinloesen(\'' + w.id + '\')">Einlösen</button>';
+    html += '</div>';
+    html += '<div class="knopfzeile">';
+    html += '<button type="button" class="leise" onclick="oeffneWunschEditor(\'' + w.id + '\')">Ändern</button>';
+    html += '<button type="button" class="leise rot" id="wu-verwerfen" onclick="verwerfenBestaetigen(\'' + w.id + '\')">Verwerfen</button>';
+    html += '</div>';
+  } else {
+    html += '<p class="hinweistext" style="text-align:center;margin-top:14px">Status: <b>' + escapeHtml(w.status) + '</b>' + (w.status === 'verworfen' ? ' — wieder aufnehmbar' : '') + '.</p>';
+    if (w.status === 'verworfen') {
+      html += '<div class="knopfzeile" style="justify-content:center"><button type="button" class="knopf" onclick="wunschWiederAufnehmen(\'' + w.id + '\')">Wieder aufnehmen</button></div>';
+    }
+  }
+  html += '<div class="knopfzeile"><button type="button" class="leise" onclick="oeffneVormerkbuch()">Zurück</button></div>';
+  oeffneZettel(html);
+}
+
+function verwerfenBestaetigen(wunschId) {
+  const knopf = document.getElementById('wu-verwerfen');
+  if (!knopf) return;
+  if (knopf.dataset.bereit === '1') {
+    const w = daten.wuensche.find(x => x.id === wunschId);
+    if (w) { w.status = 'verworfen'; speichere(); }
+    render();
+    oeffneVormerkbuch();
+    zeigeQuittung('Verworfen.');
+  } else {
+    knopf.dataset.bereit = '1';
+    knopf.textContent = 'Wirklich? Nochmals tippen.';
+  }
+}
+
+function wunschWiederAufnehmen(wunschId) {
+  const w = daten.wuensche.find(x => x.id === wunschId);
+  if (w && w.status === 'verworfen') { w.status = 'offen'; w.buchungId = null; speichere(); }
+  render();
+  oeffneVormerkbuch();
+  zeigeQuittung('Wieder aufgenommen.');
+}
+
+/* Einlösen: höchstens zwei Tipps bis zur Buchung */
+
+let einloesenBar = false;
+
+function oeffneEinloesen(wunschId) {
+  const w = daten.wuensche.find(x => x.id === wunschId);
+  if (!w) return;
+  const posten = ausgabePosten();
+  if (posten.length === 0) { zeigeQuittung('Erst einen Posten anlegen.'); return; }
+  const blatt = aktuellesBlatt();
+
+  let html = '<div class="zettel-titel">Einlösen</div>';
+  html += '<p class="hinweistext" style="text-align:center"><b>' + escapeHtml(w.titel) + '</b></p>';
+  html += '<div class="feldgruppe"><label for="el-betrag">Betrag in Euro</label>';
+  html += '<input class="feld betrag" id="el-betrag" type="text" inputmode="decimal" autocomplete="off" value="'
+       + (w.betrag ? euroOhneZeichen(w.betrag) : '') + '" placeholder="0,00"></div>';
+  html += '<div class="feldgruppe"><label>Bezahlt</label><div class="wahl2">';
+  html += '<button type="button" class="' + (einloesenBar ? '' : 'gewaehlt') + '" onclick="waehleEinloesenArt(\'' + w.id + '\', false)">vom Konto</button>';
+  html += '<button type="button" class="' + (einloesenBar ? 'gewaehlt' : '') + '" onclick="waehleEinloesenArt(\'' + w.id + '\', true)">bar</button>';
+  html += '</div></div>';
+  html += '<p class="hinweistext">Der Beweggrund wird auf „Geplanter Kauf" gesetzt.</p>';
+  html += '<div class="feldgruppe" style="margin-bottom:6px"><label>Posten wählen — verbucht sofort</label></div>';
+  html += '<div class="postenwahl">';
+  const sortiert = w.postenId
+    ? posten.slice().sort((a, b) => (a.id === w.postenId ? -1 : 0) - (b.id === w.postenId ? -1 : 0))
+    : posten;
+  for (const p of sortiert) {
+    const rest = (p.monatsbudget || 0) - istBetrag(p.id, blatt);
+    html += '<button type="button" class="wahl-posten" onclick="loeseWunschEin(\'' + w.id + '\', \'' + p.id + '\')">'
+         + '<span class="w-name">' + escapeHtml(p.name) + (p.id === w.postenId ? ' <em style="font-size:0.78rem;color:var(--tinte-blass)">— vorgemerkt</em>' : '') + '</span>'
+         + '<span class="w-rest' + (rest < 0 ? ' rot' : '') + '">' + (rest < 0 ? 'überzogen um ' + euro(-rest) : 'verbleiben ' + euro(rest)) + '</span></button>';
+  }
+  html += '</div>';
+  html += '<div class="knopfzeile"><button type="button" class="leise" onclick="oeffneWunschDetail(\'' + w.id + '\')">Abbrechen</button></div>';
+  oeffneZettel(html);
+}
+
+function waehleEinloesenArt(wunschId, bar) {
+  einloesenBar = bar;
+  const betrag = document.getElementById('el-betrag').value;
+  oeffneEinloesen(wunschId);
+  document.getElementById('el-betrag').value = betrag;
+}
+
+function loeseWunschEin(wunschId, kategorieId) {
+  const w = daten.wuensche.find(x => x.id === wunschId);
+  if (!w) return;
+  const feld = document.getElementById('el-betrag');
+  const betrag = parseBetrag(feld.value);
+  if (!(betrag > 0)) { feld.focus(); feld.select && feld.select(); return; }
+
+  const g = beweggrund(GEPLANTER_KAUF_ID) || aktiveBeweggruende()[0] || null;
+  let eintragId;
+
+  if (einloesenBar) {
+    eintragId = neueId('c');
+    daten.bargeld.bewegungen.push({
+      id: eintragId,
+      datum: heuteISO(),
+      betrag: -betrag,
+      kategorieId: kategorieId,
+      notiz: w.titel,
+      beweggrundId: g ? g.id : null,
+      geplant: g ? g.geplantStandard : null
+    });
+  } else {
+    const kat = daten.kategorien.find(k => k.id === kategorieId);
+    eintragId = neueId('b');
+    daten.buchungen.push({
+      id: eintragId,
+      datum: heuteISO(),
+      betrag: -betrag,
+      text: w.titel,
+      konto: kat ? (kat.konto || 'haushalt') : 'haushalt',
+      kategorieId: kategorieId,
+      quelle: 'manuell',
+      autoZugeordnet: false,
+      beweggrundId: g ? g.id : null,
+      geplant: g ? g.geplantStandard : null,
+      wunschId: w.id
+    });
+  }
+
+  w.status = 'eingelöst';
+  w.buchungId = eintragId;
+  speichere();
+  schliesseZettel();
+  render();
+  zeigeQuittung('Eingelöst und verbucht.');
+}
+
+/* Gruppen */
+
+function oeffneWunschgruppen() {
+  const gruppen = daten.wunschgruppen.slice()
+    .sort((a, b) => (a.reihenfolge || 0) - (b.reihenfolge || 0));
+  let html = '<div class="zettel-titel">Wunschgruppen</div>';
+  if (gruppen.length === 0) {
+    html += '<p class="vermerk">Noch keine Gruppe angelegt.</p>';
+  } else {
+    for (const g of gruppen) {
+      const anzahl = offeneWuensche().filter(w => w.gruppeId === g.id).length;
+      html += '<button type="button" class="bg-zeile" onclick="oeffneWunschgruppeEditor(\'' + g.id + '\')">';
+      html += '<span class="b-name">' + escapeHtml(g.name) + '</span>';
+      html += '<span class="b-standard">' + (anzahl === 1 ? '1 Vormerkung' : anzahl + ' Vormerkungen') + '</span>';
+      html += '</button>';
+    }
+  }
+  html += '<div class="knopfzeile">';
+  html += '<button type="button" class="leise" onclick="oeffneVormerkbuch()">Zurück</button>';
+  html += '<button type="button" class="knopf" onclick="oeffneWunschgruppeEditor(null)">Gruppe anlegen</button>';
+  html += '</div>';
+  oeffneZettel(html);
+}
+
+function oeffneWunschgruppeEditor(gruppeId) {
+  const g = gruppeId ? wunschgruppe(gruppeId) : null;
+  let html = '<div class="zettel-titel">' + (g ? 'Gruppe' : 'Neue Gruppe') + '</div>';
+  html += '<div class="feldgruppe"><label for="wg-name">Bezeichnung</label>';
+  html += '<input class="feld" id="wg-name" type="text" autocomplete="off" value="' + (g ? escapeHtml(g.name) : '') + '" placeholder="z. B. Für Joshi"></div>';
+  html += '<div class="knopfzeile">';
+  if (g) {
+    html += '<button type="button" class="leise rot" id="wg-loeschen" onclick="gruppeLoeschenBestaetigen(\'' + g.id + '\')">Löschen</button>';
+  } else {
+    html += '<button type="button" class="leise" onclick="oeffneWunschgruppen()">Abbrechen</button>';
+  }
+  html += '<button type="button" class="knopf primaer" onclick="speichereWunschgruppe(' + (g ? '\'' + g.id + '\'' : 'null') + ')">Übernehmen</button>';
+  html += '</div>';
+  oeffneZettel(html);
+  if (!g) document.getElementById('wg-name').focus();
+}
+
+function oeffneWunschgruppeNeu() {
+  let html = '<div class="zettel-titel">Neue Gruppe</div>';
+  html += '<div class="feldgruppe"><label for="wg-name">Bezeichnung</label>';
+  html += '<input class="feld" id="wg-name" type="text" autocomplete="off" placeholder="z. B. Für Joshi"></div>';
+  html += '<p class="hinweistext">Die Gruppe wird angelegt; anschließend geht es mit der Vormerkung weiter.</p>';
+  html += '<div class="knopfzeile">';
+  html += '<button type="button" class="leise" onclick="oeffneWunschEditor(null)">Abbrechen</button>';
+  html += '<button type="button" class="knopf primaer" onclick="legeGruppeAnUndZurueck()">Anlegen</button>';
+  html += '</div>';
+  oeffneZettel(html);
+  document.getElementById('wg-name').focus();
+}
+
+function legeGruppeAnUndZurueck() {
+  const name = document.getElementById('wg-name').value.trim();
+  if (!name) { document.getElementById('wg-name').focus(); return; }
+  const maxReihe = daten.wunschgruppen.reduce((m, g) => Math.max(m, g.reihenfolge || 0), 0);
+  const neu = { id: neueId('wg'), name: name, reihenfolge: maxReihe + 1 };
+  daten.wunschgruppen.push(neu);
+  speichere();
+  wunschEditorGruppe = neu.id;
+  oeffneWunschEditor(null);
+  zeigeQuittung('Gruppe angelegt.');
+}
+
+function speichereWunschgruppe(gruppeId) {
+  const name = document.getElementById('wg-name').value.trim();
+  if (!name) { document.getElementById('wg-name').focus(); return; }
+  if (gruppeId) {
+    const g = wunschgruppe(gruppeId);
+    if (g) g.name = name;
+  } else {
+    const maxReihe = daten.wunschgruppen.reduce((m, g) => Math.max(m, g.reihenfolge || 0), 0);
+    daten.wunschgruppen.push({ id: neueId('wg'), name: name, reihenfolge: maxReihe + 1 });
+  }
+  speichere();
+  oeffneWunschgruppen();
+  zeigeQuittung('Verbucht.');
+}
+
+function gruppeLoeschenBestaetigen(gruppeId) {
+  const knopf = document.getElementById('wg-loeschen');
+  if (!knopf) return;
+  if (knopf.dataset.bereit === '1') {
+    // Vormerkungen bleiben erhalten, sie verlieren nur ihre Gruppe.
+    for (const w of daten.wuensche) {
+      if (w.gruppeId === gruppeId) w.gruppeId = null;
+    }
+    const i = daten.wunschgruppen.findIndex(g => g.id === gruppeId);
+    if (i >= 0) daten.wunschgruppen.splice(i, 1);
+    speichere();
+    oeffneWunschgruppen();
+    zeigeQuittung('Gruppe gelöscht — Vormerkungen bleiben.');
+  } else {
+    knopf.dataset.bereit = '1';
+    knopf.textContent = 'Wirklich? Vormerkungen bleiben.';
+  }
+}
+
+function oeffneWunschArchiv() {
+  const erledigt = daten.wuensche.filter(w => w.status !== 'offen')
+    .sort((a, b) => (b.erstellt || '').localeCompare(a.erstellt || ''));
+  let html = '<div class="zettel-titel">Erledigtes</div>';
+  if (erledigt.length === 0) {
+    html += '<p class="vermerk">Noch nichts eingelöst oder verworfen.</p>';
+  } else {
+    for (const w of erledigt) {
+      html += '<button type="button" class="bg-zeile' + (w.status === 'verworfen' ? ' inaktiv' : '') + '" onclick="oeffneWunschDetail(\'' + w.id + '\')">';
+      html += '<span class="b-name">' + escapeHtml(w.titel) + '</span>';
+      html += '<span class="b-standard">' + escapeHtml(w.status) + '</span>';
+      html += '</button>';
+    }
+  }
+  html += '<div class="knopfzeile"><button type="button" class="leise" onclick="oeffneVormerkbuch()">Zurück</button></div>';
+  oeffneZettel(html);
+}
+
+/* ── Schuldenabbau ── */
+
+function letzterStand(kredit) {
+  if (!kredit.staende || kredit.staende.length === 0) return null;
+  return kredit.staende.slice().sort((a, b) => a.datum.localeCompare(b.datum))[kredit.staende.length - 1];
+}
+
+function standZumMonat(kredit, monat) {
+  // Letzter bekannter Stand bis einschließlich dieses Monats.
+  let treffer = null;
+  for (const s of (kredit.staende || []).slice().sort((a, b) => a.datum.localeCompare(b.datum))) {
+    if (s.datum.slice(0, 7) <= monat) treffer = s;
+  }
+  return treffer ? treffer.betrag : null;
+}
+
+function gesamtSchulden() {
+  let summe = 0;
+  for (const k of daten.kredite) {
+    const s = letzterStand(k);
+    if (s) summe += s.betrag;
+  }
+  return Math.round(summe * 100) / 100;
+}
+
+function schuldenVerlauf() {
+  // Monatsreihe vom ersten erfassten Stand bis zum aktuellen Blatt.
+  const alleDaten = [];
+  for (const k of daten.kredite) {
+    for (const s of (k.staende || [])) alleDaten.push(s.datum.slice(0, 7));
+  }
+  if (alleDaten.length === 0) return [];
+  const start = alleDaten.sort()[0];
+  const ende = aktuellesBlatt();
+  const reihe = [];
+  let [j, m] = start.split('-').map(Number);
+  while (true) {
+    const monat = j + '-' + String(m).padStart(2, '0');
+    let summe = 0, bekannt = false;
+    for (const k of daten.kredite) {
+      const wert = standZumMonat(k, monat);
+      if (wert !== null) { summe += wert; bekannt = true; }
+    }
+    if (bekannt) reihe.push({ monat: monat, betrag: Math.round(summe * 100) / 100 });
+    if (monat >= ende) break;
+    m++;
+    if (m > 12) { m = 1; j++; }
+    if (reihe.length > 400) break;
+  }
+  return reihe;
+}
+
+function zeichneVerlauf(reihe) {
+  if (reihe.length < 2) return '';
+  const breite = 300, hoehe = 90, rand = 4;
+  const werte = reihe.map(p => p.betrag);
+  const max = Math.max.apply(null, werte);
+  const min = Math.min.apply(null, werte);
+  const spanne = (max - min) || 1;
+  const punkte = reihe.map((p, i) => {
+    const x = rand + (i / (reihe.length - 1)) * (breite - 2 * rand);
+    const y = rand + (1 - (p.betrag - min) / spanne) * (hoehe - 2 * rand);
+    return x.toFixed(1) + ',' + y.toFixed(1);
+  }).join(' ');
+
+  let svg = '<svg class="federstrich" viewBox="0 0 ' + breite + ' ' + hoehe + '" preserveAspectRatio="none" aria-hidden="true">';
+  svg += '<polyline points="' + punkte + '" fill="none" stroke="var(--tinte)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>';
+  svg += '</svg>';
+  return svg;
+}
+
+function oeffneSchulden() {
+  const gesamt = gesamtSchulden();
+  const reihe = schuldenVerlauf();
+  const start = reihe.length > 0 ? reihe[0].betrag : 0;
+  const abgebaut = Math.round((start - gesamt) * 100) / 100;
+  const prozent = start > 0 ? (abgebaut / start) * 100 : 0;
+
+  let html = '<div class="zettel-titel">Schulden</div>';
+
+  if (daten.kredite.length === 0) {
+    html += '<p class="vermerk">Noch kein Kredit verzeichnet.</p>';
+    html += '<p class="hinweistext">Kredite werden mit ihrem jeweiligen Stand erfasst. Der Verlauf entsteht aus den eingetragenen Ständen — ein Eintrag im Monat genügt.</p>';
+  } else {
+    html += '<section class="saldo-kopf" style="padding-top:0">';
+    html += '<div class="zettel">Gesamtstand</div>';
+    html += '<div class="saldo-betrag">' + euro(gesamt) + '</div>';
+    if (reihe.length > 1 && abgebaut > 0) {
+      html += '<div class="frei">abgetragen ' + euro(abgebaut) + ' seit ' + escapeHtml(blattNameLang(reihe[0].monat))
+           + ' — ' + prozent.toFixed(1).replace('.', ',') + ' %</div>';
+    } else if (reihe.length > 1 && abgebaut < 0) {
+      html += '<div class="frei neutral">seit ' + escapeHtml(blattNameLang(reihe[0].monat)) + ' um '
+           + euro(-abgebaut) + ' höher</div>';
+    }
+    html += '</section>';
+
+    if (reihe.length > 1) {
+      html += '<div class="buchtitel" style="margin-top:18px">Verlauf</div>';
+      html += '<div class="verlauf">' + zeichneVerlauf(reihe) + '</div>';
+      html += '<div class="verlauf-marken"><span>' + escapeHtml(blattNameLang(reihe[0].monat)) + '</span>'
+           + '<span>' + escapeHtml(blattNameLang(reihe[reihe.length - 1].monat)) + '</span></div>';
+    }
+
+    html += '<div class="buchtitel" style="margin-top:18px">Kredite</div>';
+    html += '<div class="spaltenkopf"><span>Kredit</span><span></span><span>Stand</span></div>';
+    for (const k of daten.kredite) {
+      const s = letzterStand(k);
+      html += '<button type="button" class="einnahme-zeile" onclick="oeffneKreditDetail(\'' + k.id + '\')">';
+      html += '<span class="name">' + escapeHtml(k.name)
+           + (s ? ' <em>— Stand vom ' + datumKurz(s.datum) + '</em>' : ' <em>— kein Stand</em>') + '</span>';
+      html += '<span class="e-summe schuld">' + (s ? euroOhneZeichen(s.betrag) : '—') + '</span>';
+      html += '</button>';
+    }
+    html += '<div class="abschluss"><span>Summe</span><span class="betrag">' + euro(gesamt) + '</span></div>';
+  }
+
+  html += '<div class="knopfzeile">';
+  html += '<button type="button" class="leise" onclick="oeffneVerwaltung()">Zurück</button>';
+  html += '<button type="button" class="knopf" onclick="oeffneKreditEditor(null)">Kredit anlegen</button>';
+  html += '</div>';
+  oeffneZettel(html);
+}
+
+function oeffneKreditEditor(kreditId) {
+  const k = kreditId ? daten.kredite.find(x => x.id === kreditId) : null;
+  let html = '<div class="zettel-titel">' + (k ? 'Kredit' : 'Neuer Kredit') + '</div>';
+  html += '<div class="feldgruppe"><label for="kr-name">Bezeichnung</label>';
+  html += '<input class="feld" id="kr-name" type="text" autocomplete="off" value="' + (k ? escapeHtml(k.name) : '') + '" placeholder="z. B. Rahmenkredit"></div>';
+  if (!k) {
+    html += '<div class="feldgruppe"><label for="kr-stand">Heutiger Stand in Euro</label>';
+    html += '<input class="feld betrag" id="kr-stand" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00"></div>';
+  }
+  html += '<div class="knopfzeile">';
+  if (k) {
+    html += '<button type="button" class="leise rot" id="kr-loeschen" onclick="kreditLoeschenBestaetigen(\'' + k.id + '\')">Löschen</button>';
+  } else {
+    html += '<button type="button" class="leise" onclick="oeffneSchulden()">Abbrechen</button>';
+  }
+  html += '<button type="button" class="knopf primaer" onclick="speichereKredit(' + (k ? '\'' + k.id + '\'' : 'null') + ')">Übernehmen</button>';
+  html += '</div>';
+  oeffneZettel(html);
+  document.getElementById('kr-name').focus();
+}
+
+function speichereKredit(kreditId) {
+  const name = document.getElementById('kr-name').value.trim();
+  if (!name) { document.getElementById('kr-name').focus(); return; }
+  if (kreditId) {
+    const k = daten.kredite.find(x => x.id === kreditId);
+    if (k) k.name = name;
+  } else {
+    const feld = document.getElementById('kr-stand');
+    const stand = parseBetrag(feld.value);
+    if (!(stand >= 0)) { feld.focus(); return; }
+    daten.kredite.push({
+      id: neueId('d'),
+      name: name,
+      staende: [{ datum: heuteISO(), betrag: stand }]
+    });
+  }
+  speichere();
+  oeffneSchulden();
+  zeigeQuittung('Verbucht.');
+}
+
+function kreditLoeschenBestaetigen(kreditId) {
+  const knopf = document.getElementById('kr-loeschen');
+  if (!knopf) return;
+  if (knopf.dataset.bereit === '1') {
+    const i = daten.kredite.findIndex(x => x.id === kreditId);
+    if (i >= 0) daten.kredite.splice(i, 1);
+    speichere();
+    oeffneSchulden();
+    zeigeQuittung('Kredit gelöscht.');
+  } else {
+    knopf.dataset.bereit = '1';
+    knopf.textContent = 'Wirklich? Alle Stände entfallen.';
+  }
+}
+
+function oeffneKreditDetail(kreditId) {
+  const k = daten.kredite.find(x => x.id === kreditId);
+  if (!k) return;
+  const staende = (k.staende || []).slice().sort((a, b) => b.datum.localeCompare(a.datum));
+  const s = letzterStand(k);
+  const erster = (k.staende || []).slice().sort((a, b) => a.datum.localeCompare(b.datum))[0];
+
+  let html = '<div class="zettel-titel">' + escapeHtml(k.name) + '</div>';
+  html += '<section class="saldo-kopf" style="padding-top:0">';
+  html += '<div class="zettel">Stand</div>';
+  html += '<div class="saldo-betrag">' + (s ? euro(s.betrag) : '—') + '</div>';
+  if (erster && s && erster !== s) {
+    const ab = Math.round((erster.betrag - s.betrag) * 100) / 100;
+    if (ab > 0) html += '<div class="frei">abgetragen ' + euro(ab) + ' seit ' + datumKurz(erster.datum) + '</div>';
+    else if (ab < 0) html += '<div class="frei neutral">um ' + euro(-ab) + ' höher als am ' + datumKurz(erster.datum) + '</div>';
+  }
+  html += '</section>';
+
+  html += '<div class="feldgruppe" style="margin-top:16px"><label for="kd-stand">Neuen Stand eintragen</label>';
+  html += '<input class="feld betrag" id="kd-stand" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00"></div>';
+  html += '<div class="knopfzeile" style="justify-content:flex-end;margin-top:0">';
+  html += '<button type="button" class="knopf primaer" onclick="erfasseStand(\'' + k.id + '\')">Eintragen</button>';
+  html += '</div>';
+
+  html += '<div class="buchtitel" style="margin-top:18px">Erfasste Stände</div>';
+  if (staende.length === 0) {
+    html += '<p class="hinweistext" style="text-align:center">Noch kein Stand erfasst.</p>';
+  } else {
+    html += '<div class="eintragsliste">';
+    for (const st of staende.slice(0, 24)) {
+      html += '<div class="eintragszeile">';
+      html += '<span class="e-datum">' + datumLang(st.datum) + '</span>';
+      html += '<span class="e-betrag">' + euro(st.betrag) + '</span>';
+      html += '<button type="button" onclick="streicheStand(\'' + k.id + '\', \'' + st.datum + '\', this)">streichen</button>';
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+
+  html += '<div class="knopfzeile">';
+  html += '<button type="button" class="leise" onclick="oeffneKreditEditor(\'' + k.id + '\')">Umbenennen</button>';
+  html += '<button type="button" class="leise" onclick="oeffneSchulden()">Zurück</button>';
+  html += '</div>';
+  oeffneZettel(html);
+}
+
+function erfasseStand(kreditId) {
+  const k = daten.kredite.find(x => x.id === kreditId);
+  if (!k) return;
+  const feld = document.getElementById('kd-stand');
+  const betrag = parseBetrag(feld.value);
+  if (!(betrag >= 0)) { feld.focus(); return; }
+  const heute = heuteISO();
+  if (!k.staende) k.staende = [];
+  const vorhanden = k.staende.find(s => s.datum === heute);
+  if (vorhanden) vorhanden.betrag = betrag;
+  else k.staende.push({ datum: heute, betrag: betrag });
+  speichere();
+  oeffneKreditDetail(kreditId);
+  zeigeQuittung('Verbucht.');
+}
+
+function streicheStand(kreditId, datum, knopf) {
+  if (knopf.dataset.bereit !== '1') {
+    knopf.dataset.bereit = '1';
+    knopf.textContent = 'wirklich streichen?';
+    knopf.classList.add('bestaetigen');
+    return;
+  }
+  const k = daten.kredite.find(x => x.id === kreditId);
+  if (k) {
+    const i = k.staende.findIndex(s => s.datum === datum);
+    if (i >= 0) k.staende.splice(i, 1);
+    speichere();
+  }
+  oeffneKreditDetail(kreditId);
+  zeigeQuittung('Stand gestrichen.');
+}
+
+/* ── Haushaltskonto-Planung ── */
+
+function haushaltsPosten() {
+  return ausgabePosten().filter(p => (p.konto || 'haushalt') === 'haushalt');
+}
+
+function naechstesBlatt() {
+  let [j, m] = aktuellesBlatt().split('-').map(Number);
+  m++;
+  if (m > 12) { m = 1; j++; }
+  return j + '-' + String(m).padStart(2, '0');
+}
+
+function oeffnePlanung() {
+  const posten = haushaltsPosten();
+  const summeBudgets = posten.reduce((s, p) => s + (p.monatsbudget || 0), 0);
+  const plan = daten.settings.planung || {};
+  const restbestand = typeof plan.restbestand === 'number' ? plan.restbestand : null;
+  const korrektur = typeof plan.korrektur === 'number' ? plan.korrektur : 0;
+  const vorschlag = Math.round((summeBudgets - (restbestand || 0) + korrektur) * 100) / 100;
+
+  let html = '<div class="zettel-titel">Haushaltskonto</div>';
+
+  if (posten.length === 0) {
+    html += '<p class="vermerk">Kein Posten läuft über das Haushaltskonto.</p>';
+    html += '<p class="hinweistext">Im Posten-Detail lässt sich je Posten festlegen, ob er über das Haushalts- oder das Girokonto läuft.</p>';
+    html += '<div class="knopfzeile"><button type="button" class="leise" onclick="oeffneVerwaltung()">Zurück</button></div>';
+    oeffneZettel(html);
+    return;
+  }
+
+  html += '<p class="hinweistext">Vorschlag für den Beginn von <b>' + escapeHtml(blattNameLang(naechstesBlatt())) + '</b>. Jede Position einzeln:</p>';
+
+  /* Aufstellung — vollständig transparent (F6.2) */
+  html += '<div class="spaltenkopf"><span>Position</span><span></span><span>Betrag</span></div>';
+  for (const p of posten) {
+    html += '<div class="plan-zeile"><span class="p-name">' + escapeHtml(p.name) + '</span>';
+    html += '<span class="p-betrag">' + euroOhneZeichen(p.monatsbudget || 0) + '</span></div>';
+  }
+  html += '<div class="plan-zwischensumme"><span>Summe der Posten</span><span class="p-betrag">' + euroOhneZeichen(summeBudgets) + '</span></div>';
+
+  html += '<div class="plan-zeile abzug"><span class="p-name">abzüglich Restbestand auf dem Konto</span>';
+  html += '<span class="p-betrag">' + (restbestand === null ? '—' : '− ' + euroOhneZeichen(restbestand)) + '</span></div>';
+  if (korrektur !== 0) {
+    html += '<div class="plan-zeile"><span class="p-name">' + escapeHtml(plan.korrekturGrund || 'Korrektur') + '</span>';
+    html += '<span class="p-betrag">' + (korrektur > 0 ? '+ ' : '− ') + euroOhneZeichen(Math.abs(korrektur)) + '</span></div>';
+  }
+
+  html += '<div class="abschluss"><span>Zu überweisen</span><span class="betrag">' + euro(Math.max(vorschlag, 0)) + '</span></div>';
+
+  if (restbestand === null) {
+    html += '<p class="vermerk">Ohne Restbestand gerechnet — der Vorschlag entspricht der vollen Summe.</p>';
+  } else if (plan.stand) {
+    html += '<p class="vermerk">Restbestand eingetragen am ' + datumLang(plan.stand) + '.</p>';
+  }
+
+  html += '<div class="knopfzeile">';
+  html += '<button type="button" class="leise" onclick="oeffneRestbestand()">Restbestand eintragen</button>';
+  html += '<button type="button" class="leise" onclick="oeffneKorrektur()">Korrektur</button>';
+  html += '</div>';
+  html += '<div class="knopfzeile"><button type="button" class="leise" onclick="oeffneVerwaltung()">Zurück</button></div>';
+  oeffneZettel(html);
+}
+
+function oeffneRestbestand() {
+  const plan = daten.settings.planung || {};
+  let html = '<div class="zettel-titel">Restbestand</div>';
+  html += '<p class="hinweistext">Der Betrag, der am Monatsende noch auf dem Haushaltskonto liegt. Er wird vom Überweisungsvorschlag abgezogen.</p>';
+  html += '<div class="feldgruppe"><label for="pl-rest">Auf dem Konto</label>';
+  html += '<input class="feld betrag" id="pl-rest" type="text" inputmode="decimal" autocomplete="off" value="'
+       + (typeof plan.restbestand === 'number' ? euroOhneZeichen(plan.restbestand) : '') + '" placeholder="0,00"></div>';
+  html += '<div class="knopfzeile">';
+  html += '<button type="button" class="leise" onclick="oeffnePlanung()">Abbrechen</button>';
+  html += '<button type="button" class="knopf primaer" onclick="speichereRestbestand()">Übernehmen</button>';
+  html += '</div>';
+  oeffneZettel(html);
+  document.getElementById('pl-rest').focus();
+}
+
+function speichereRestbestand() {
+  const feld = document.getElementById('pl-rest');
+  const wert = parseBetrag(feld.value);
+  if (!(wert >= 0)) { feld.focus(); return; }
+  if (!daten.settings.planung) daten.settings.planung = {};
+  daten.settings.planung.restbestand = wert;
+  daten.settings.planung.stand = heuteISO();
+  speichere();
+  oeffnePlanung();
+  zeigeQuittung('Verbucht.');
+}
+
+function oeffneKorrektur() {
+  const plan = daten.settings.planung || {};
+  let html = '<div class="zettel-titel">Korrektur</div>';
+  html += '<p class="hinweistext">Ein einmaliger Zu- oder Abschlag, etwa für eine bevorstehende größere Anschaffung. Negative Beträge mit Minuszeichen.</p>';
+  html += '<div class="feldgruppe"><label for="pl-korr">Betrag</label>';
+  html += '<input class="feld betrag" id="pl-korr" type="text" inputmode="text" autocomplete="off" value="'
+       + (plan.korrektur ? euroOhneZeichen(plan.korrektur) : '') + '" placeholder="0,00"></div>';
+  html += '<div class="feldgruppe"><label for="pl-grund">Bezeichnung — freiwillig</label>';
+  html += '<input class="feld" id="pl-grund" type="text" autocomplete="off" value="' + escapeHtml(plan.korrekturGrund || '') + '" placeholder="z. B. Urlaubskasse"></div>';
+  html += '<div class="knopfzeile">';
+  html += '<button type="button" class="leise" onclick="entferneKorrektur()">Entfernen</button>';
+  html += '<button type="button" class="knopf primaer" onclick="speichereKorrektur()">Übernehmen</button>';
+  html += '</div>';
+  html += '<div class="knopfzeile"><button type="button" class="leise" onclick="oeffnePlanung()">Abbrechen</button></div>';
+  oeffneZettel(html);
+  document.getElementById('pl-korr').focus();
+}
+
+function speichereKorrektur() {
+  const wert = parseBetrag(document.getElementById('pl-korr').value);
+  if (!isFinite(wert)) { document.getElementById('pl-korr').focus(); return; }
+  if (!daten.settings.planung) daten.settings.planung = {};
+  daten.settings.planung.korrektur = wert;
+  daten.settings.planung.korrekturGrund = document.getElementById('pl-grund').value.trim();
+  speichere();
+  oeffnePlanung();
+  zeigeQuittung('Verbucht.');
+}
+
+function entferneKorrektur() {
+  if (daten.settings.planung) {
+    daten.settings.planung.korrektur = 0;
+    daten.settings.planung.korrekturGrund = '';
+    speichere();
+  }
+  oeffnePlanung();
+  zeigeQuittung('Korrektur entfernt.');
+}
+
+/* ── Rückschau ──
+   Grundsatz (Lastenheft F10.4): Diese Ansicht bewertet nicht. Keine Ziele,
+   keine Schwellen, keine Farbcodierung nach Kennzahlen, keine Wertungswörter.
+   Sie zeigt Zusammenhänge und überlässt die Deutung dem Leser.            */
+
+function ausgabenEintraege(blatt) {
+  // Grundgesamtheit: Ausgaben-Einträge (Buchungen + Bargeld) des Zeitraums.
+  const ausB = daten.buchungen.filter(b =>
+    b.betrag < 0 && b.kategorieId && b.kategorieId !== ABHEBUNG_ID
+    && istAusgabePosten(daten.kategorien.find(k => k.id === b.kategorieId))
+    && (!blatt || b.datum.slice(0, 7) === blatt));
+  const ausC = daten.bargeld.bewegungen.filter(c =>
+    c.betrag < 0 && c.kategorieId
+    && (!blatt || c.datum.slice(0, 7) === blatt));
+  return ausB.concat(ausC);
+}
+
+function rueckschauZahlen(blatt) {
+  const alle = ausgabenEintraege(blatt);
+  const mitVermerk = alle.filter(e => e.beweggrundId);
+  const summe = e => Math.abs(e.betrag);
+
+  const geplant = mitVermerk.filter(e => e.geplant === true);
+  const ungeplant = mitVermerk.filter(e => e.geplant === false);
+
+  const jeGrund = {};
+  for (const e of mitVermerk) {
+    if (!jeGrund[e.beweggrundId]) jeGrund[e.beweggrundId] = { anzahl: 0, summe: 0 };
+    jeGrund[e.beweggrundId].anzahl++;
+    jeGrund[e.beweggrundId].summe += summe(e);
+  }
+
+  return {
+    gesamt: alle.length,
+    mitVermerk: mitVermerk.length,
+    abdeckung: alle.length > 0 ? mitVermerk.length / alle.length : 0,
+    summeAlle: alle.reduce((s, e) => s + summe(e), 0),
+    summeMitVermerk: mitVermerk.reduce((s, e) => s + summe(e), 0),
+    geplantAnzahl: geplant.length,
+    geplantSumme: geplant.reduce((s, e) => s + summe(e), 0),
+    ungeplantAnzahl: ungeplant.length,
+    ungeplantSumme: ungeplant.reduce((s, e) => s + summe(e), 0),
+    jeGrund: jeGrund,
+    eintraege: mitVermerk
+  };
+}
+
+function anteilsLinie(anteil) {
+  // Tintenlinie als Anteilsstrich — dieselbe Sprache wie im Hauptbuch.
+  const w = Math.max(0, Math.min(1, anteil)) * 100;
+  return '<div class="tintenlinie ruecklinie"><i style="--w:' + w.toFixed(1) + '%"></i></div>';
+}
+
+function prozentText(anteil) {
+  return (anteil * 100).toFixed(0) + ' %';
+}
+
+let rueckschauBlatt = null; // null = alle Blätter
+
+function oeffneRueckschau() {
+  const blatt = rueckschauBlatt;
+  const z = rueckschauZahlen(blatt);
+  const zeitraum = blatt ? 'Blatt ' + blattName(blatt) : 'alle Blätter';
+
+  let html = '<div class="zettel-titel">Rückschau</div>';
+
+  /* Zeitraumwahl */
+  html += '<div class="streifen-reihe" style="margin-bottom:12px">';
+  html += '<button type="button" class="stempel' + (blatt === null ? ' gewaehlt' : '') + '" onclick="waehleRueckschauBlatt(null)">alle Blätter</button>';
+  for (const bl of alleBlaetter().slice(0, 12)) {
+    html += '<button type="button" class="stempel' + (blatt === bl ? ' gewaehlt' : '') + '" onclick="waehleRueckschauBlatt(\'' + bl + '\')">' + escapeHtml(blattName(bl)) + '</button>';
+  }
+  html += '</div>';
+
+  if (z.gesamt === 0) {
+    html += '<p class="vermerk">Für ' + escapeHtml(zeitraum) + ' ist kein Eintrag verzeichnet.</p>';
+    html += '<div class="knopfzeile"><button type="button" class="leise" onclick="oeffneVerwaltung()">Zurück</button></div>';
+    oeffneZettel(html);
+    return;
+  }
+
+  /* Abdeckung — steht immer zuerst (F10.3) */
+  html += '<div class="buchtitel">Abdeckung</div>';
+  html += '<p class="rueck-satz">Von <b>' + z.gesamt + '</b> ' + (z.gesamt === 1 ? 'Eintrag trägt' : 'Einträgen tragen') + ' <b>'
+       + z.mitVermerk + '</b> einen Vermerk.</p>';
+  html += anteilsLinie(z.abdeckung);
+  html += '<p class="rueck-fuss">' + prozentText(z.abdeckung) + ' — alle folgenden Angaben beziehen sich auf diese ' + z.mitVermerk + ' Einträge.</p>';
+
+  if (z.mitVermerk === 0) {
+    html += '<p class="vermerk">Ohne Vermerke lässt sich nichts gegenüberstellen.</p>';
+    html += '<div class="knopfzeile"><button type="button" class="leise" onclick="oeffneVerwaltung()">Zurück</button></div>';
+    oeffneZettel(html);
+    return;
+  }
+
+  /* Geplant / Ungeplant */
+  html += '<div class="buchtitel" style="margin-top:20px">Geplant und ungeplant</div>';
+  html += '<div class="spaltenkopf"><span>Kennzeichen</span><span>Anzahl</span><span>Summe</span></div>';
+  const anteilGeplant = z.mitVermerk > 0 ? z.geplantAnzahl / z.mitVermerk : 0;
+  html += '<div class="rueck-zeile"><span class="r-name">geplant</span>'
+       + '<span class="r-anzahl">' + z.geplantAnzahl + '</span>'
+       + '<span class="r-summe">' + euroOhneZeichen(z.geplantSumme) + '</span>'
+       + anteilsLinie(anteilGeplant)
+       + '<span class="r-rest">' + prozentText(anteilGeplant) + ' der vermerkten Einträge</span></div>';
+  const anteilUngeplant = z.mitVermerk > 0 ? z.ungeplantAnzahl / z.mitVermerk : 0;
+  html += '<div class="rueck-zeile"><span class="r-name">ungeplant</span>'
+       + '<span class="r-anzahl">' + z.ungeplantAnzahl + '</span>'
+       + '<span class="r-summe">' + euroOhneZeichen(z.ungeplantSumme) + '</span>'
+       + anteilsLinie(anteilUngeplant)
+       + '<span class="r-rest">' + prozentText(anteilUngeplant) + ' der vermerkten Einträge</span></div>';
+
+  /* Je Beweggrund */
+  html += '<div class="buchtitel" style="margin-top:20px">Nach Beweggrund</div>';
+  html += '<div class="spaltenkopf"><span>Beweggrund</span><span>Anzahl</span><span>Summe</span></div>';
+  const gruende = Object.keys(z.jeGrund)
+    .map(id => ({ id: id, name: (beweggrund(id) || {}).name || 'Unbekannt',
+                  anzahl: z.jeGrund[id].anzahl, summe: z.jeGrund[id].summe }))
+    .sort((a, b) => b.anzahl - a.anzahl || b.summe - a.summe);
+  for (const g of gruende) {
+    const anteil = g.anzahl / z.mitVermerk;
+    html += '<div class="rueck-zeile"><span class="r-name">' + escapeHtml(g.name) + '</span>'
+         + '<span class="r-anzahl">' + g.anzahl + '</span>'
+         + '<span class="r-summe">' + euroOhneZeichen(g.summe) + '</span>'
+         + anteilsLinie(anteil)
+         + '<span class="r-rest">' + prozentText(anteil) + '</span></div>';
+  }
+  html += '<div class="abschluss"><span>Summe der vermerkten Einträge</span><span class="betrag">' + euro(z.summeMitVermerk) + '</span></div>';
+
+  html += '<div class="knopfzeile">';
+  html += '<button type="button" class="leise" onclick="oeffneVerwaltung()">Zurück</button>';
+  html += '<button type="button" class="leise" onclick="oeffneKreuzbetrachtung()">Beweggrund × Posten</button>';
+  html += '</div>';
+  if (alleBlaetter().length > 1) {
+    html += '<div class="korb-fuss"><button type="button" onclick="oeffneVerlaufUeberBlaetter()">Entwicklung über die Blätter</button></div>';
+  }
+  oeffneZettel(html);
+}
+
+function waehleRueckschauBlatt(blatt) {
+  rueckschauBlatt = blatt;
+  oeffneRueckschau();
+}
+
+function oeffneKreuzbetrachtung() {
+  const blatt = rueckschauBlatt;
+  const z = rueckschauZahlen(blatt);
+  const zeitraum = blatt ? 'Blatt ' + blattName(blatt) : 'alle Blätter';
+
+  /* Kreuztabelle Beweggrund × Posten, nach Posten gegliedert */
+  const jePosten = {};
+  for (const e of z.eintraege) {
+    if (!jePosten[e.kategorieId]) jePosten[e.kategorieId] = { anzahl: 0, summe: 0, gruende: {} };
+    const p = jePosten[e.kategorieId];
+    p.anzahl++;
+    p.summe += Math.abs(e.betrag);
+    if (!p.gruende[e.beweggrundId]) p.gruende[e.beweggrundId] = { anzahl: 0, summe: 0 };
+    p.gruende[e.beweggrundId].anzahl++;
+    p.gruende[e.beweggrundId].summe += Math.abs(e.betrag);
+  }
+
+  let html = '<div class="zettel-titel">Beweggrund × Posten</div>';
+  html += '<p class="rueck-fuss" style="margin-bottom:14px">' + escapeHtml(zeitraum) + ' — ' + z.mitVermerk
+       + ' vermerkte von ' + z.gesamt + ' Einträgen (' + prozentText(z.abdeckung) + ').</p>';
+
+  const postenIds = Object.keys(jePosten).sort((a, b) => jePosten[b].summe - jePosten[a].summe);
+  if (postenIds.length === 0) {
+    html += '<p class="vermerk">Kein vermerkter Eintrag im Zeitraum.</p>';
+  } else {
+    for (const pid of postenIds) {
+      const p = jePosten[pid];
+      html += '<div class="buchtitel" style="margin-top:16px">' + escapeHtml(postenName(pid)) + '</div>';
+      html += '<div class="spaltenkopf"><span>Beweggrund</span><span>Anzahl</span><span>Summe</span></div>';
+      const gruende = Object.keys(p.gruende)
+        .map(id => ({ name: (beweggrund(id) || {}).name || 'Unbekannt',
+                      anzahl: p.gruende[id].anzahl, summe: p.gruende[id].summe }))
+        .sort((a, b) => b.summe - a.summe);
+      for (const g of gruende) {
+        html += '<div class="rueck-zeile schmal"><span class="r-name">' + escapeHtml(g.name) + '</span>'
+             + '<span class="r-anzahl">' + g.anzahl + '</span>'
+             + '<span class="r-summe">' + euroOhneZeichen(g.summe) + '</span>'
+             + anteilsLinie(g.summe / p.summe) + '</div>';
+      }
+      html += '<div class="plan-zwischensumme"><span>' + p.anzahl + (p.anzahl === 1 ? ' Eintrag' : ' Einträge')
+           + '</span><span class="p-betrag">' + euroOhneZeichen(p.summe) + '</span></div>';
+    }
+  }
+
+  html += '<div class="knopfzeile"><button type="button" class="leise" onclick="oeffneRueckschau()">Zurück</button></div>';
+  oeffneZettel(html);
+}
+
+function oeffneVerlaufUeberBlaetter() {
+  const blaetter = alleBlaetter().slice(0, 12).reverse();
+  let html = '<div class="zettel-titel">Entwicklung</div>';
+  html += '<p class="rueck-fuss" style="margin-bottom:14px">Je Blatt: vermerkte Einträge und ihr Anteil geplanter Einträge.</p>';
+  html += '<div class="spaltenkopf"><span>Blatt</span><span>Vermerkt</span><span>Geplant</span></div>';
+
+  for (const bl of blaetter) {
+    const z = rueckschauZahlen(bl);
+    if (z.gesamt === 0) continue;
+    const anteilGeplant = z.mitVermerk > 0 ? z.geplantAnzahl / z.mitVermerk : 0;
+    html += '<div class="rueck-zeile"><span class="r-name">' + escapeHtml(blattNameLang(bl)) + '</span>';
+    html += '<span class="r-anzahl">' + z.mitVermerk + '/' + z.gesamt + '</span>';
+    html += '<span class="r-summe">' + (z.mitVermerk > 0 ? z.geplantAnzahl + '/' + z.mitVermerk : '—') + '</span>';
+    if (z.mitVermerk > 0) {
+      html += anteilsLinie(anteilGeplant);
+      html += '<span class="r-rest">' + prozentText(anteilGeplant) + ' geplant · Abdeckung ' + prozentText(z.abdeckung) + '</span>';
+    } else {
+      html += '<span class="r-rest">kein Vermerk verzeichnet</span>';
+    }
+    html += '</div>';
+  }
+
+  html += '<div class="knopfzeile"><button type="button" class="leise" onclick="oeffneRueckschau()">Zurück</button></div>';
+  oeffneZettel(html);
+}
+
+/* ── Verwaltung (Sammelzugang) ── */
+
+function oeffneVerwaltung() {
+  let html = '<div class="zettel-titel">Verwaltung</div>';
+  const punkte = [
+    ['Posten anlegen', 'oeffnePostenNeu()'],
+    ['Rückschau', 'oeffneRueckschau()'],
+    ['Haushaltskonto planen', 'oeffnePlanung()'],
+    ['Vormerkbuch', 'oeffneVormerkbuch()'],
+    ['Schulden', 'oeffneSchulden()'],
+    ['Einnahmen', 'oeffneEinnahmen()'],
+    ['Regeln', 'oeffneRegeln()'],
+    ['Beweggründe', 'oeffneBeweggruende()'],
+    ['Frühere Blätter', 'oeffneBlattwahl()'],
+    ['Sicherung', 'oeffneSicherung()']
+  ];
+  for (const [name, fn] of punkte) {
+    html += '<button type="button" class="blattzeile" onclick="' + fn + '"><span class="b-name">' + name + '</span></button>';
+  }
+  html += '<div class="knopfzeile"><button type="button" class="leise" onclick="schliesseZettel()">Schließen</button></div>';
+  oeffneZettel(html);
+}
+
+/* ── CSV-Einlesen ── */
+
+let importZustand = null; // { konto, kopfzellen, zeilen, sep, zuordnung }
+
+function oeffneEinlesen() {
+  importZustand = { konto: 'giro' };
+  let html = '<div class="zettel-titel">Blatt einlesen</div>';
+  html += '<div class="feldgruppe"><label>Konto</label><div class="wahl2">';
+  html += '<button type="button" id="ei-giro" class="gewaehlt" onclick="waehleImportKonto(\'giro\')">Girokonto</button>';
+  html += '<button type="button" id="ei-haushalt" onclick="waehleImportKonto(\'haushalt\')">Haushaltskonto</button>';
+  html += '</div></div>';
+  html += '<p class="hinweistext">Die CSV-Datei aus dem Online-Banking wählen. Bereits Verzeichnetes wird erkannt und übersprungen.</p>';
+  html += '<div class="knopfzeile" style="justify-content:center;margin-top:0">';
+  html += '<label class="knopf primaer" style="display:inline-block">Datei wählen'
+       + '<input type="file" accept=".csv,text/csv,text/plain" style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden" onchange="leseCsvDatei(this)"></label>';
+  html += '</div>';
+  html += '<div class="knopfzeile"><button type="button" class="leise" onclick="schliesseZettel()">Abbrechen</button></div>';
+  oeffneZettel(html);
+}
+
+function waehleImportKonto(konto) {
+  if (!importZustand) importZustand = {};
+  importZustand.konto = konto;
+  const g = document.getElementById('ei-giro'), h = document.getElementById('ei-haushalt');
+  if (g && h) {
+    g.classList.toggle('gewaehlt', konto === 'giro');
+    h.classList.toggle('gewaehlt', konto === 'haushalt');
+  }
+}
+
+function leseCsvDatei(input) {
+  const datei = input.files && input.files[0];
+  if (!datei) return;
+  const leser = new FileReader();
+  leser.onload = () => {
+    let text;
+    try {
+      text = new TextDecoder('utf-8', { fatal: true }).decode(leser.result);
+    } catch (e) {
+      text = new TextDecoder('iso-8859-1').decode(leser.result);
+    }
+    verarbeiteCsvText(text);
+  };
+  leser.readAsArrayBuffer(datei);
+}
+
+function teileCsvZeile(zeile, sep) {
+  // Einfacher Teiler mit Anführungszeichen-Unterstützung ("...";"...")
+  const zellen = [];
+  let aktuell = '', inAnf = false;
+  for (let i = 0; i < zeile.length; i++) {
+    const z = zeile[i];
+    if (z === '"') {
+      if (inAnf && zeile[i + 1] === '"') { aktuell += '"'; i++; }
+      else inAnf = !inAnf;
+    } else if (z === sep && !inAnf) {
+      zellen.push(aktuell); aktuell = '';
+    } else {
+      aktuell += z;
+    }
+  }
+  zellen.push(aktuell);
+  return zellen.map(s => s.trim());
+}
+
+function findeKopfzeile(zeilen, sep) {
+  for (let i = 0; i < Math.min(zeilen.length, 40); i++) {
+    const zellen = teileCsvZeile(zeilen[i], sep);
+    if (zellen.length >= 3 && zellen.some(z => /betrag/i.test(z))) {
+      return { index: i, zellen: zellen };
+    }
+  }
+  return null;
+}
+
+function rateZuordnung(kopfzellen) {
+  const finde = (regex, ausschluss) => {
+    for (let i = 0; i < kopfzellen.length; i++) {
+      if (regex.test(kopfzellen[i]) && !(ausschluss && ausschluss.test(kopfzellen[i]))) return i;
+    }
+    return null;
+  };
+  return {
+    datum: finde(/^buchung$|^buchungstag$|datum/i, /wertstellung|valuta/i),
+    betrag: finde(/betrag/i, /währung|waehrung/i),
+    empfaenger: finde(/auftraggeber|empf|begünstigter|beguenstigter/i, null),
+    zweck: finde(/verwendungszweck/i, null)
+  };
+}
+
+function verarbeiteCsvText(text) {
+  const zeilen = text.split(/\r?\n/);
+  let sep = ';', kopf = findeKopfzeile(zeilen, ';');
+  if (!kopf) { sep = ','; kopf = findeKopfzeile(zeilen, ','); }
+  if (!kopf) {
+    zeigeImportFehler('Keine Kopfzeile mit einer Betrag-Spalte gefunden. Ist es der Umsatz-Export der Bank?');
+    return;
+  }
+  importZustand.sep = sep;
+  importZustand.kopfzellen = kopf.zellen;
+  importZustand.zeilen = zeilen.slice(kopf.index + 1).filter(z => z.trim() !== '');
+
+  const gespeichert = daten.settings.importZuordnung[importZustand.konto];
+  if (gespeichert && passtZuordnung(gespeichert, kopf.zellen)) {
+    importZustand.zuordnung = gespeichert;
+    fuehreImportDurch();
+  } else {
+    importZustand.zuordnung = rateZuordnung(kopf.zellen);
+    zeigeZuordnung();
+  }
+}
+
+function passtZuordnung(z, kopfzellen) {
+  return z && Number.isInteger(z.datum) && Number.isInteger(z.betrag)
+      && z.datum < kopfzellen.length && z.betrag < kopfzellen.length;
+}
+
+function zeigeImportFehler(text) {
+  let html = '<div class="zettel-titel">Blatt einlesen</div>';
+  html += '<p class="hinweistext" style="color:var(--siegellack)">' + escapeHtml(text) + '</p>';
+  html += '<div class="knopfzeile"><button type="button" class="leise" onclick="oeffneEinlesen()">Zurück</button></div>';
+  oeffneZettel(html);
+}
+
+/* Spaltenzuordnung (nur beim allerersten Import je Konto nötig) */
+
+function zeigeZuordnung() {
+  const felder = [
+    ['datum', 'Datum', true],
+    ['betrag', 'Betrag', true],
+    ['empfaenger', 'Auftraggeber / Empfänger', false],
+    ['zweck', 'Verwendungszweck', false]
+  ];
+  let html = '<div class="zettel-titel">Spalten zuordnen</div>';
+  html += '<p class="hinweistext">Einmalige Zuordnung für dieses Konto — die App merkt sie sich. Erkannte Spalten sind vorbelegt.</p>';
+  for (const [schluessel, name, pflicht] of felder) {
+    html += '<div class="zuordnung-zeile"><div class="z-feld">' + name + (pflicht ? '' : ' — freiwillig') + '</div>';
+    html += '<div class="streifen-reihe">';
+    importZustand.kopfzellen.forEach((zelle, i) => {
+      const gewaehlt = importZustand.zuordnung[schluessel] === i;
+      html += '<button type="button" class="stempel' + (gewaehlt ? ' gewaehlt' : '') + '" onclick="setzeZuordnung(\'' + schluessel + '\', ' + i + ')">' + escapeHtml(zelle || '(leer)') + '</button>';
+    });
+    if (!pflicht) {
+      const keine = importZustand.zuordnung[schluessel] === null;
+      html += '<button type="button" class="stempel' + (keine ? ' gewaehlt' : '') + '" onclick="setzeZuordnung(\'' + schluessel + '\', null)">keine</button>';
+    }
+    html += '</div></div>';
+  }
+  html += '<div class="knopfzeile">';
+  html += '<button type="button" class="leise" onclick="oeffneEinlesen()">Abbrechen</button>';
+  html += '<button type="button" class="knopf primaer" onclick="bestaetigeZuordnung()">Stimmt so</button>';
+  html += '</div>';
+  oeffneZettel(html);
+}
+
+function setzeZuordnung(schluessel, index) {
+  importZustand.zuordnung[schluessel] = index;
+  zeigeZuordnung();
+}
+
+function bestaetigeZuordnung() {
+  const z = importZustand.zuordnung;
+  if (!Number.isInteger(z.datum) || !Number.isInteger(z.betrag)) {
+    zeigeImportFehler('Datum und Betrag müssen zugeordnet sein.');
+    return;
+  }
+  daten.settings.importZuordnung[importZustand.konto] = z;
+  speichere();
+  fuehreImportDurch();
+}
+
+/* Durchführung: Parsen, Duplikate, Übernahme */
+
+function parseCsvDatum(s) {
+  s = (s || '').trim();
+  let m = s.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+  if (m) return m[3] + '-' + m[2] + '-' + m[1];
+  m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (m) return s;
+  return null;
+}
+
+function normalisiereText(s) {
+  return (s || '').toLowerCase().replace(/\s+/g, ' ').trim();
+}
+
+function fuehreImportDurch() {
+  const z = importZustand.zuordnung;
+  const konto = importZustand.konto;
+  const vorhandene = new Set(daten.buchungen.filter(b => b.hash).map(b => b.hash));
+  const imDatei = {};
+  let neu = 0, uebersprungen = 0, unlesbar = 0, automatisch = 0;
+
+  for (const zeile of importZustand.zeilen) {
+    const zellen = teileCsvZeile(zeile, importZustand.sep);
+    const datum = parseCsvDatum(zellen[z.datum]);
+    const betrag = parseBetrag(zellen[z.betrag] || '');
+    if (!datum || !isFinite(betrag)) { unlesbar++; continue; }
+    const empf = z.empfaenger !== null && z.empfaenger !== undefined ? (zellen[z.empfaenger] || '') : '';
+    const zweck = z.zweck !== null && z.zweck !== undefined ? (zellen[z.zweck] || '') : '';
+    const text = (empf && zweck) ? empf + ' · ' + zweck : (empf || zweck);
+
+    const basis = konto + '|' + datum + '|' + betrag.toFixed(2) + '|' + normalisiereText(text);
+    imDatei[basis] = (imDatei[basis] || 0) + 1;
+    const schluessel = imDatei[basis] > 1 ? basis + '#' + imDatei[basis] : basis;
+
+    if (vorhandene.has(schluessel)) { uebersprungen++; continue; }
+    vorhandene.add(schluessel);
+
+    // Regelanwendung: Treffer werden unmittelbar verbucht (bestätigte Entscheidung zu v0.4).
+    let kategorieId = null, autoZugeordnet = false;
+    const regel = findeRegel(text);
+    if (regel) {
+      const ziel = daten.kategorien.find(k => k.id === regel.kategorieId);
+      const passt = regel.kategorieId === ABHEBUNG_ID
+        ? betrag < 0
+        : (betrag < 0 ? (!ziel || istAusgabePosten(ziel)) : (ziel && istEinnahmePosten(ziel)));
+      if (passt) { kategorieId = regel.kategorieId; autoZugeordnet = true; automatisch++; }
+    }
+
+    daten.buchungen.push({
+      id: neueId('b'),
+      datum: datum,
+      betrag: betrag,
+      text: text,
+      konto: konto,
+      kategorieId: kategorieId,
+      quelle: 'csv',
+      autoZugeordnet: autoZugeordnet,
+      hash: schluessel,
+      beweggrundId: null,
+      geplant: null,
+      wunschId: null
+    });
+    neu++;
+  }
+
+  speichere();
+  render();
+
+  let html = '<div class="zettel-titel">Eingelesen</div>';
+  html += '<p class="hinweistext" style="text-align:center">' + importZustand.zeilen.length + ' Zeilen gelesen — <b>' + neu + ' neu verzeichnet</b>, '
+       + uebersprungen + ' bereits vorhanden' + (unlesbar > 0 ? ', ' + unlesbar + ' unlesbar' : '') + '.'
+       + (automatisch > 0 ? '<br>Davon <b>' + automatisch + '</b> nach Regel selbsttätig zugeordnet.' : '') + '</p>';
+  const offen = korbListe().length;
+  if (offen > 0) {
+    html += '<div class="knopfzeile" style="justify-content:center;margin-top:6px">';
+    html += '<button type="button" class="knopf primaer" onclick="oeffneKorb()">Eingangskorb öffnen (' + offen + ')</button>';
+    html += '</div>';
+  } else {
+    html += '<p class="vermerk">Der Korb ist leer. Geprüft und für richtig befunden.</p>';
+  }
+  html += '<div class="knopfzeile"><button type="button" class="leise" onclick="schliesseZettel()">Schließen</button></div>';
+  oeffneZettel(html);
+}
+
+/* ── Eingangskorb (Weg C) ── */
+
+let korbBeweggrund = null;
+let korbUebersprungen = new Set();
+let regelVorschlagOffen = null;
+
+function regelVorschlagAnnehmen() {
+  const v = regelVorschlagOffen;
+  regelVorschlagOffen = null;
+  if (!v) return;
+  daten.regeln.push({
+    id: neueId('r'),
+    muster: v.muster,
+    feld: 'text',
+    kategorieId: v.kategorieId,
+    aktiv: true
+  });
+  // Regel sofort auf den übrigen Korb anwenden.
+  let getroffen = 0;
+  for (const b of korbListe()) {
+    if (b.betrag < 0 && findeRegel(b.text)) {
+      const r = findeRegel(b.text);
+      if (r && r.id === daten.regeln[daten.regeln.length - 1].id) {
+        b.kategorieId = r.kategorieId;
+        b.autoZugeordnet = true;
+        getroffen++;
+      }
+    }
+  }
+  speichere();
+  zeigeQuittung(getroffen > 0
+    ? 'Regel angelegt — ' + getroffen + (getroffen === 1 ? ' weiterer Eintrag' : ' weitere Einträge') + ' zugeordnet.'
+    : 'Regel angelegt.');
+  oeffneKorb();
+}
+
+function regelVorschlagVerwerfen() {
+  regelVorschlagOffen = null;
+  oeffneKorb();
+}
+
+function korbListe() {
+  return daten.buchungen.filter(b => !b.kategorieId)
+    .sort((a, b) => a.datum.localeCompare(b.datum) || a.id.localeCompare(b.id));
+}
+
+function naechsteKorbBuchung() {
+  const liste = korbListe();
+  return liste.find(b => !korbUebersprungen.has(b.id)) || liste[0] || null;
+}
+
+function oeffneKorb() {
+  const b = naechsteKorbBuchung();
+  if (!b) {
+    schliesseZettel();
+    render();
+    zeigeQuittung('Der Korb ist leer.');
+    return;
+  }
+  const gesamt = korbListe().length;
+  const posten = ausgabePosten();
+  const blatt = b.datum.slice(0, 7);
+  const teile = (b.text || '').split(' · ');
+  const empf = teile[0] || '';
+  const zweck = teile.slice(1).join(' · ');
+  const istEinnahme = b.betrag > 0;
+
+  let html = '<div class="zettel-titel">Eingangskorb</div>';
+  if (regelVorschlagOffen) {
+    html += '<div class="regelvorschlag">';
+    html += '<span>Künftig immer <b>' + escapeHtml(regelVorschlagOffen.muster) + '</b> → '
+         + escapeHtml(postenName(regelVorschlagOffen.kategorieId)) + '?</span>';
+    html += '<span class="rv-knoepfe">';
+    html += '<button type="button" onclick="regelVorschlagAnnehmen()">Regel anlegen</button>';
+    html += '<button type="button" onclick="regelVorschlagVerwerfen()">nein</button>';
+    html += '</span></div>';
+  }
+  html += '<div class="korb-zaehler">' + (gesamt === 1 ? 'Letzter Eintrag' : 'Noch ' + gesamt + ' zu prüfen') + '</div>';
+
+  html += '<div class="korb-karte">';
+  html += '<div class="korb-kopf"><span class="k-datum">' + datumLang(b.datum) + '</span>';
+  html += '<span class="k-betrag' + (istEinnahme ? ' haben' : '') + '">' + (istEinnahme ? '+' : '−') + euro(Math.abs(b.betrag)) + '</span></div>';
+  if (empf) html += '<div class="korb-empf">' + escapeHtml(empf) + '</div>';
+  if (zweck) html += '<div class="korb-zweck">' + escapeHtml(zweck.length > 160 ? zweck.slice(0, 160) + '…' : zweck) + '</div>';
+  html += '</div>';
+
+  if (istEinnahme) {
+    const ePosten = daten.kategorien.filter(k => istEinnahmePosten(k) && !k.archiviert && k.id !== EINNAHME_ID)
+      .sort((x, y) => (x.reihenfolge || 0) - (y.reihenfolge || 0) || x.name.localeCompare(y.name, 'de'));
+    html += '<div class="korb-abschnitt">Einnahme-Posten wählen — verzeichnet sofort</div>';
+    html += '<div class="postenwahl">';
+    for (const p of ePosten) {
+      html += '<button type="button" class="wahl-posten" onclick="korbEinnahme(\'' + b.id + '\', \'' + p.id + '\')">'
+           + '<span class="w-name">' + escapeHtml(p.name) + '</span>'
+           + '<span class="w-rest">' + euroOhneZeichen(einnahmeSumme(p.id, blatt)) + ' im Blatt</span></button>';
+    }
+    html += '<button type="button" class="wahl-posten" onclick="korbEinnahme(\'' + b.id + '\', \'' + EINNAHME_ID + '\')">'
+         + '<span class="w-name">Ohne Zuordnung</span><span class="w-rest">Sammelposten</span></button>';
+    html += '</div>';
+    html += '<div class="korb-abschnitt"><button type="button" class="leise" style="padding:2px 0" onclick="oeffneEinnahmePostenAusKorb()">Einnahme-Posten anlegen</button></div>';
+  } else {
+    html += '<div class="korb-abschnitt">Beweggrund — freiwillig, ein Tipp</div>';
+    html += '<div class="streifen-reihe">';
+    for (const g of aktiveBeweggruende()) {
+      html += '<button type="button" class="stempel' + (korbBeweggrund === g.id ? ' gewaehlt' : '') + '" onclick="korbWaehleBeweggrund(\'' + b.id + '\', \'' + g.id + '\')">' + escapeHtml(g.name) + '</button>';
+    }
+    html += '</div>';
+    html += '<div class="korb-abschnitt">Posten wählen — verbucht sofort</div>';
+    html += '<div class="postenwahl">';
+    for (const p of posten) {
+      const rest = (p.monatsbudget || 0) - istBetrag(p.id, blatt);
+      html += '<button type="button" class="wahl-posten" onclick="korbVerbuche(\'' + b.id + '\', \'' + p.id + '\')">'
+           + '<span class="w-name">' + escapeHtml(p.name) + '</span>'
+           + '<span class="w-rest' + (rest < 0 ? ' rot' : '') + '">' + (rest < 0 ? 'überzogen um ' + euro(-rest) : 'verbleiben ' + euro(rest)) + '</span>'
+           + '</button>';
+    }
+    html += '<button type="button" class="wahl-posten" onclick="korbVerbuche(\'' + b.id + '\', \'' + ABHEBUNG_ID + '\')">'
+         + '<span class="w-name">Bargeldabhebung</span>'
+         + '<span class="w-rest">in die Kasse</span></button>';
+    html += '</div>';
+  }
+
+  html += '<div class="knopfzeile">';
+  html += '<button type="button" class="leise" onclick="korbSpaeter(\'' + b.id + '\')">später</button>';
+  html += '<button type="button" class="leise" onclick="schliesseKorb()">Schließen</button>';
+  html += '</div>';
+  if (aktiveRegeln().length > 0 && korbRegeltreffer().length > 0) {
+    html += '<div class="korb-fuss"><button type="button" onclick="zeigeKorbNachlauf()">Regeln auf den Korb anwenden</button></div>';
+  }
+  oeffneZettel(html);
+}
+
+/* Regeln nachträglich auf den Korb anwenden (nie still — immer mit Vorschau) */
+
+function korbRegeltreffer() {
+  const treffer = [];
+  for (const b of korbListe()) {
+    const r = findeRegel(b.text);
+    if (!r) continue;
+    const ziel = daten.kategorien.find(k => k.id === r.kategorieId);
+    const passt = r.kategorieId === ABHEBUNG_ID
+      ? b.betrag < 0
+      : (b.betrag < 0 ? (!ziel || istAusgabePosten(ziel)) : (ziel && istEinnahmePosten(ziel)));
+    if (passt) treffer.push({ buchung: b, regel: r });
+  }
+  return treffer;
+}
+
+function zeigeKorbNachlauf() {
+  const treffer = korbRegeltreffer();
+  const gesamt = korbListe().length;
+  let html = '<div class="zettel-titel">Regeln anwenden</div>';
+  if (treffer.length === 0) {
+    html += '<p class="vermerk">Keine Regel greift auf den Korb.</p>';
+  } else {
+    html += '<p class="hinweistext"><b>' + treffer.length + '</b> von ' + gesamt + ' Einträgen im Korb würden zugeordnet:</p>';
+    const jePosten = {};
+    for (const t of treffer) {
+      const name = postenName(t.regel.kategorieId);
+      jePosten[name] = (jePosten[name] || 0) + 1;
+    }
+    html += '<div class="spaltenkopf"><span>Posten</span><span></span><span>Anzahl</span></div>';
+    for (const name of Object.keys(jePosten).sort((a, b) => a.localeCompare(b, 'de'))) {
+      html += '<div class="einnahme-zeile" style="pointer-events:none"><span class="name">' + escapeHtml(name) + '</span>'
+           + '<span class="e-summe">' + jePosten[name] + '</span></div>';
+    }
+    html += '<p class="hinweistext" style="margin-top:12px">Die Zuordnungen werden als „automatisch" gekennzeichnet und sind jederzeit umbuchbar.</p>';
+  }
+  html += '<div class="knopfzeile">';
+  html += '<button type="button" class="leise" onclick="oeffneKorb()">Zurück</button>';
+  if (treffer.length > 0) {
+    html += '<button type="button" class="knopf primaer" onclick="fuehreKorbNachlaufAus()">Zuordnen</button>';
+  }
+  html += '</div>';
+  oeffneZettel(html);
+}
+
+function fuehreKorbNachlaufAus() {
+  const treffer = korbRegeltreffer();
+  for (const t of treffer) {
+    t.buchung.kategorieId = t.regel.kategorieId;
+    t.buchung.autoZugeordnet = true;
+  }
+  speichere();
+  render();
+  zeigeQuittung(treffer.length + (treffer.length === 1 ? ' Eintrag zugeordnet.' : ' Einträge zugeordnet.'));
+  oeffneKorb();
+}
+
+function korbWaehleBeweggrund(buchungId, beweggrundId) {
+  korbBeweggrund = korbBeweggrund === beweggrundId ? null : beweggrundId;
+  oeffneKorb();
+}
+
+function korbVerbuche(buchungId, kategorieId) {
+  const b = daten.buchungen.find(x => x.id === buchungId);
+  if (!b) return;
+  b.kategorieId = kategorieId;
+  b.autoZugeordnet = false;
+  if (korbBeweggrund && kategorieId !== ABHEBUNG_ID) {
+    const g = beweggrund(korbBeweggrund);
+    if (g) { b.beweggrundId = g.id; b.geplant = g.geplantStandard; }
+  }
+  korbBeweggrund = null;
+  speichere();
+
+  // Regelvorschlag: nur wenn keine Regel den Text bereits erfasst.
+  const muster = musterVorschlag(b.text);
+  if (muster && !findeRegel(b.text)) {
+    regelVorschlagOffen = { muster: muster, kategorieId: kategorieId };
+  } else {
+    regelVorschlagOffen = null;
+    zeigeQuittung('Verbucht.');
+  }
+  oeffneKorb();
+}
+
+function korbEinnahme(buchungId, kategorieId) {
+  const b = daten.buchungen.find(x => x.id === buchungId);
+  if (!b) return;
+  const ziel = kategorieId || EINNAHME_ID;
+  if (ziel === EINNAHME_ID) sichereSammelposten();
+  b.kategorieId = ziel;
+  korbBeweggrund = null;
+  regelVorschlagOffen = null;
+  speichere();
+  zeigeQuittung('Verzeichnet.');
+  oeffneKorb();
+}
+
+function oeffneEinnahmePostenAusKorb() {
+  let html = '<div class="zettel-titel">Neuer Einnahme-Posten</div>';
+  html += '<div class="feldgruppe"><label for="en-name">Bezeichnung</label>';
+  html += '<input class="feld" id="en-name" type="text" autocomplete="off" placeholder="z. B. Gehalt"></div>';
+  html += '<div class="knopfzeile">';
+  html += '<button type="button" class="leise" onclick="oeffneKorb()">Abbrechen</button>';
+  html += '<button type="button" class="knopf primaer" onclick="legeEinnahmePostenAnUndZurueck()">Anlegen</button>';
+  html += '</div>';
+  oeffneZettel(html);
+  document.getElementById('en-name').focus();
+}
+
+function legeEinnahmePostenAnUndZurueck() {
+  const name = document.getElementById('en-name').value.trim();
+  if (!name) { document.getElementById('en-name').focus(); return; }
+  const maxReihe = daten.kategorien.reduce((m, k) => Math.max(m, k.reihenfolge || 0), 0);
+  daten.kategorien.push({
+    id: neueId('k'), name: name, typ: 'einnahme', konto: 'giro',
+    monatsbudget: 0, reihenfolge: maxReihe + 1, archiviert: false
+  });
+  speichere();
+  zeigeQuittung('Posten angelegt.');
+  oeffneKorb();
+}
+
+function korbSpaeter(buchungId) {
+  korbUebersprungen.add(buchungId);
+  korbBeweggrund = null;
+  regelVorschlagOffen = null;
+  const liste = korbListe();
+  if (liste.every(b => korbUebersprungen.has(b.id))) {
+    schliesseKorb();
+    return;
+  }
+  oeffneKorb();
+}
+
+function schliesseKorb() {
+  korbUebersprungen = new Set();
+  korbBeweggrund = null;
+  regelVorschlagOffen = null;
+  schliesseZettel();
+  render();
+}
+
+/* ── Blattwahl ── */
+
+function oeffneBlattwahl() {
+  const blaetter = alleBlaetter();
+  let html = '<div class="zettel-titel">Blätter</div>';
+  for (const bl of blaetter) {
+    const z = blattZahlen(bl);
+    const aktuell = bl === aktuellesBlatt();
+    html += '<button type="button" class="blattzeile' + (aktuell ? ' aktuell' : '') + '" onclick="waehleBlatt(\'' + bl + '\')">';
+    html += '<span class="b-name">' + escapeHtml(blattNameLang(bl)) + '</span>';
+    html += '<span class="b-summe">Ausgaben ' + euro(z.ist) + '</span>';
+    html += '</button>';
+  }
+  html += '<div class="knopfzeile"><button type="button" class="leise" onclick="schliesseZettel()">Schließen</button></div>';
+  oeffneZettel(html);
+}
+
+let blattManuellGewaehlt = false;
+
+function waehleBlatt(blatt) {
+  angezeigtesBlatt = blatt;
+  blattManuellGewaehlt = blatt !== aktuellesBlatt();
+  schliesseZettel();
+  render();
+}
+
+/* ── Sicherung ── */
+
+function oeffneSicherung() {
+  let html = '<div class="zettel-titel">Sicherung</div>';
+  const ls = daten.settings.letzteSicherung;
+  html += '<p class="hinweistext">Der gesamte Bestand wird als eine Datei gesichert und kann daraus vollständig wiederhergestellt werden. '
+       + (ls ? 'Letzte Sicherung: <b>' + datumLang(ls.slice(0, 10)) + '</b>.' : 'Noch keine Sicherung verzeichnet.') + '</p>';
+  html += '<div class="knopfzeile" style="justify-content:center;margin-top:6px">';
+  html += '<button type="button" class="knopf primaer" onclick="exportiereSicherung()">Sicherung exportieren</button>';
+  html += '</div>';
+  html += '<div class="buchtitel" style="margin-top:22px">Wiederherstellen</div>';
+  html += '<p class="hinweistext">Eine Sicherungsdatei wählen. Vor dem Ersetzen wird eine Vorschau gezeigt — nichts geschieht ohne Bestätigung.</p>';
+  html += '<div class="knopfzeile" style="justify-content:center;margin-top:0">';
+  html += '<label class="knopf" style="display:inline-block">Datei wählen'
+       + '<input type="file" id="import-datei" accept=".json,application/json" style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden" onchange="pruefeImport(this)"></label>';
+  html += '</div>';
+  html += '<div id="import-vorschau"></div>';
+  html += '<div class="knopfzeile"><button type="button" class="leise" onclick="schliesseZettel()">Schließen</button></div>';
+  oeffneZettel(html);
+}
+
+function exportiereSicherung() {
+  daten.settings.letzteSicherung = new Date().toISOString().slice(0, 19);
+  speichere();
+  const inhalt = JSON.stringify(daten, null, 2);
+  const blob = new Blob([inhalt], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'finanz-cockpit-sicherung-' + heuteISO() + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+  zeigeQuittung('Sicherung erstellt.');
+  oeffneSicherung();
+}
+
+let importKandidat = null;
+
+function pruefeImport(input) {
+  const datei = input.files && input.files[0];
+  const vorschau = document.getElementById('import-vorschau');
+  importKandidat = null;
+  if (!datei) return;
+  const leser = new FileReader();
+  leser.onload = () => {
+    let d;
+    try {
+      d = JSON.parse(leser.result);
+    } catch (e) {
+      vorschau.innerHTML = '<p class="hinweistext" style="color:var(--siegellack)">Die Datei ließ sich nicht lesen — keine gültige Sicherung.</p>';
+      return;
+    }
+    if (!d || typeof d.schemaVersion !== 'number' || !Array.isArray(d.kategorien) || !Array.isArray(d.buchungen)) {
+      vorschau.innerHTML = '<p class="hinweistext" style="color:var(--siegellack)">Die Datei enthält keinen Finanz-Cockpit-Bestand.</p>';
+      return;
+    }
+    if (d.schemaVersion > SCHEMA_VERSION) {
+      vorschau.innerHTML = '<p class="hinweistext" style="color:var(--siegellack)">Die Sicherung stammt aus einer neueren Fassung (Schema ' + d.schemaVersion + ') und kann hier nicht eingelesen werden.</p>';
+      return;
+    }
+    importKandidat = migriere(d);
+    const ls = importKandidat.settings.letzteSicherung;
+    vorschau.innerHTML =
+      '<p class="hinweistext">Vorschau: <b>' + importKandidat.kategorien.length + '</b> Posten, <b>'
+      + importKandidat.buchungen.length + '</b> Einträge'
+      + (ls ? ', gesichert am <b>' + datumLang(ls.slice(0, 10)) + '</b>' : '')
+      + '. Der jetzige Bestand (<b>' + daten.kategorien.length + '</b> Posten, <b>' + daten.buchungen.length + '</b> Einträge) wird dabei vollständig ersetzt.</p>'
+      + '<div class="knopfzeile" style="justify-content:center"><button type="button" class="knopf rot" onclick="fuehreImportAus()">Bestand ersetzen</button></div>';
+  };
+  leser.readAsText(datei);
+}
+
+function fuehreImportAus() {
+  if (!importKandidat) return;
+  daten = importKandidat;
+  importKandidat = null;
+  speichere();
+  angezeigtesBlatt = aktuellesBlatt();
+  schliesseZettel();
+  render();
+  zeigeQuittung('Bestand wiederhergestellt.');
+}
+
+/* ════════════════ Start ════════════════ */
+
+document.getElementById('siegel').addEventListener('click', oeffneEintrag);
+
+// Beim Zurückkehren zur App (neuer Tag / neuer Monat) Ansicht auffrischen.
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) {
+    if (angezeigtesBlatt !== aktuellesBlatt() && !blattManuellGewaehlt) {
+      angezeigtesBlatt = aktuellesBlatt();
+    }
+    render();
+  }
+});
+
+render();
+</script>
+</body>
+</html>
