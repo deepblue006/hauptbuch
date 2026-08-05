@@ -931,7 +931,9 @@ function leererBestand() {
       letzteSicherung: null,
       ort: 'Konstanz',
       importZuordnung: {},
-      planung: { restbestand: null, korrektur: 0, korrekturGrund: '', stand: null }
+      planung: { restbestand: null, korrektur: 0, korrekturGrund: '', stand: null },
+      blattModus: 'gehalt',
+      gehaltPostenId: null
     },
     kategorien: [],
     buchungen: [],
@@ -971,6 +973,10 @@ function migriere(d) {
   if (!d.settings.planung || typeof d.settings.planung !== 'object') {
     d.settings.planung = { restbestand: null, korrektur: 0, korrekturGrund: '', stand: null };
   }
+  if (d.settings.blattModus !== 'kalender' && d.settings.blattModus !== 'gehalt') {
+    d.settings.blattModus = 'gehalt';
+  }
+  if (typeof d.settings.gehaltPostenId === 'undefined') d.settings.gehaltPostenId = null;
   d.kategorien = (d.kategorien || []).map(k => Object.assign({ archiviert: false, reihenfolge: 0 }, k));
   d.buchungen = d.buchungen || [];
   d.regeln = d.regeln || [];
@@ -996,6 +1002,7 @@ function migriere(d) {
 }
 
 function speichere() {
+  blattPufferLeeren();
   localStorage.setItem(SPEICHER_SCHLUESSEL, JSON.stringify(daten));
 }
 
@@ -1026,7 +1033,143 @@ function heuteISO() {
   const d = new Date();
   return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 }
-function aktuellesBlatt() { return heuteISO().slice(0, 7); }
+function aktuellesBlatt() { return blattVon(heuteISO()); }
+
+/* ── Blatt-Grenzen ──
+   Zwei Betriebsarten: Kalendermonat (Grenze = Monatserster) oder
+   Gehaltseingang (Grenze = tatsächlicher Eingang, ersatzweise letzter
+   Werktag des Vormonats). Der Schlüssel eines Blattes bleibt "JJJJ-MM";
+   nur seine Grenzen verschieben sich.                                  */
+
+function isoZuDatum(iso) { return new Date(iso + 'T00:00:00'); }
+
+function datumZuIso(d) {
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')
+       + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+function addTage(iso, n) {
+  const d = isoZuDatum(iso);
+  d.setDate(d.getDate() + n);
+  return datumZuIso(d);
+}
+
+function tageDazwischen(a, b) {
+  return Math.round((isoZuDatum(b) - isoZuDatum(a)) / 86400000);
+}
+
+function monatVon(iso) { return iso.slice(0, 7); }
+
+function monatPlus(monat, n) {
+  let [j, m] = monat.split('-').map(Number);
+  const gesamt = j * 12 + (m - 1) + n;
+  return Math.floor(gesamt / 12) + '-' + String((gesamt % 12) + 1).padStart(2, '0');
+}
+
+function letzterWerktag(monat) {
+  const [j, m] = monat.split('-').map(Number);
+  const d = new Date(j, m, 0);                 // letzter Tag des Monats
+  while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() - 1);
+  return datumZuIso(d);
+}
+
+function gehaltsStichtage() {
+  const id = daten.settings.gehaltPostenId;
+  if (!id) return [];
+  const roh = daten.buchungen
+    .filter(b => b.kategorieId === id && b.betrag > 0)
+    .map(b => b.datum)
+    .sort();
+  // Ein zweiter Eingang binnen 20 Tagen eröffnet kein neues Blatt.
+  const stichtage = [];
+  for (const d of roh) {
+    if (stichtage.length === 0 || tageDazwischen(stichtage[stichtage.length - 1], d) >= 20) {
+      stichtage.push(d);
+    }
+  }
+  return stichtage;
+}
+
+let blattPuffer = null;
+
+function blattPufferLeeren() { blattPuffer = null; }
+
+function blattGrenzen() {
+  if (blattPuffer) return blattPuffer;
+
+  /* Monatsreihe bestimmen: ein Monat vor dem ältesten Datum bis zwei
+     Monate nach heute — damit auch künftige Einträge ein Blatt finden. */
+  let frueh = heuteISO();
+  for (const b of daten.buchungen) if (b.datum < frueh) frueh = b.datum;
+  for (const c of daten.bargeld.bewegungen) if (c.datum < frueh) frueh = c.datum;
+  const von = monatPlus(monatVon(frueh), -1);
+  const bis = monatPlus(monatVon(heuteISO()), 2);
+
+  const reihe = [];
+  let m = von;
+  while (m <= bis && reihe.length < 600) { reihe.push(m); m = monatPlus(m, 1); }
+
+  const modus = daten.settings.blattModus || 'kalender';
+  const grenze = {};
+
+  if (modus === 'gehalt') {
+    /* Jeder Stichtag gehört zu dem Blatt, in dem die Mehrzahl seiner
+       Tage liegt — gemessen an der Mitte des Zeitraums (rund 15 Tage). */
+    const zuordnung = {};
+    for (const s of gehaltsStichtage()) {
+      const ziel = monatVon(addTage(s, 15));
+      if (!zuordnung[ziel]) zuordnung[ziel] = s;
+    }
+    for (const mm of reihe) {
+      grenze[mm] = zuordnung[mm] || letzterWerktag(monatPlus(mm, -1));
+    }
+    /* Grenzen müssen aufsteigend bleiben, auch bei ungewöhnlichen
+       Zahlungsterminen. */
+    for (let i = 1; i < reihe.length; i++) {
+      if (grenze[reihe[i]] <= grenze[reihe[i - 1]]) {
+        grenze[reihe[i]] = addTage(grenze[reihe[i - 1]], 1);
+      }
+    }
+  } else {
+    for (const mm of reihe) grenze[mm] = mm + '-01';
+  }
+
+  blattPuffer = { reihe: reihe, grenze: grenze, treffer: new Map() };
+  return blattPuffer;
+}
+
+function blattVon(datum) {
+  const g = blattGrenzen();
+  const gemerkt = g.treffer.get(datum);
+  if (gemerkt) return gemerkt;
+
+  const reihe = g.reihe;
+  let links = 0, rechts = reihe.length - 1, fund = 0;
+  while (links <= rechts) {
+    const mitte = (links + rechts) >> 1;
+    if (g.grenze[reihe[mitte]] <= datum) { fund = mitte; links = mitte + 1; }
+    else rechts = mitte - 1;
+  }
+  const blatt = reihe[fund];
+  g.treffer.set(datum, blatt);
+  return blatt;
+}
+
+function blattStart(blatt) {
+  const g = blattGrenzen();
+  return g.grenze[blatt] || (blatt + '-01');
+}
+
+function blattEnde(blatt) {
+  // Erster Tag des Folgeblatts (ausschließlich).
+  const g = blattGrenzen();
+  const naechstes = monatPlus(blatt, 1);
+  return g.grenze[naechstes] || addTage(blattStart(blatt), 30);
+}
+
+function blattLaenge(blatt) {
+  return Math.max(1, tageDazwischen(blattStart(blatt), blattEnde(blatt)));
+}
 function blattName(blatt) {
   const [j, m] = blatt.split('-').map(Number);
   return MONATE[m - 1] + (j !== new Date().getFullYear() ? ' ' + j : '');
@@ -1034,10 +1177,6 @@ function blattName(blatt) {
 function blattNameLang(blatt) {
   const [j, m] = blatt.split('-').map(Number);
   return MONATE[m - 1] + ' ' + j;
-}
-function tageImMonat(blatt) {
-  const [j, m] = blatt.split('-').map(Number);
-  return new Date(j, m, 0).getDate();
 }
 function datumLang(iso) {
   const [j, m, t] = iso.split('-').map(Number);
@@ -1055,18 +1194,18 @@ function escapeHtml(s) {
 /* ════════════════ Berechnungen ════════════════ */
 
 function buchungenImBlatt(blatt) {
-  return daten.buchungen.filter(b => b.datum.slice(0, 7) === blatt);
+  return daten.buchungen.filter(b => blattVon(b.datum) === blatt);
 }
 
 function istBetrag(kategorieId, blatt) {
   let summe = 0;
   for (const b of daten.buchungen) {
-    if (b.kategorieId === kategorieId && b.datum.slice(0, 7) === blatt && b.betrag < 0) {
+    if (b.kategorieId === kategorieId && b.betrag < 0 && blattVon(b.datum) === blatt) {
       summe += -b.betrag;
     }
   }
   for (const c of daten.bargeld.bewegungen) {
-    if (c.kategorieId === kategorieId && c.datum.slice(0, 7) === blatt && c.betrag < 0) {
+    if (c.kategorieId === kategorieId && c.betrag < 0 && blattVon(c.datum) === blatt) {
       summe += -c.betrag;
     }
   }
@@ -1129,7 +1268,8 @@ function blattZahlen(blatt) {
 }
 
 function alleBlaetter() {
-  const menge = new Set(daten.buchungen.map(b => b.datum.slice(0, 7)));
+  const menge = new Set(daten.buchungen.map(b => blattVon(b.datum)));
+  for (const c of daten.bargeld.bewegungen) menge.add(blattVon(c.datum));
   menge.add(aktuellesBlatt());
   return Array.from(menge).sort().reverse();
 }
@@ -1144,11 +1284,11 @@ function render() {
   const istAktuell = blatt === aktuellesBlatt();
   const posten = sichtbarePosten(blatt);
   const zahlen = blattZahlen(blatt);
-  const heute = new Date();
-  const tagHeute = heute.getDate();
-  const tImM = tageImMonat(blatt);
-  const restTage = tImM - tagHeute;
-  const monatsquote = tagHeute / tImM;
+  const blattLaengeTage = blattLaenge(blatt);
+  const vergangeneTage = Math.max(0, Math.min(blattLaengeTage,
+                          tageDazwischen(blattStart(blatt), heuteISO()) + 1));
+  const restTage = Math.max(0, blattLaengeTage - vergangeneTage);
+  const monatsquote = vergangeneTage / blattLaengeTage;
   const schwelleKnapp = (daten.settings.statusSchwellen && daten.settings.statusSchwellen.knapp) || 0.85;
 
   let html = '';
@@ -1173,7 +1313,11 @@ function render() {
     if (ueberzogenGesamt) {
       html += '<div class="frei rot">von ' + euro(zahlen.soll) + ' — überzogen um ' + euro(v) + '</div>';
     } else {
-      html += '<div class="frei">von ' + euro(zahlen.soll) + ' — der Kasse ' + (restTage === 1 ? 'verbleibt 1 Tag' : 'verbleiben ' + restTage + ' Tage') + '</div>';
+      const modusGehalt = (daten.settings.blattModus || 'kalender') === 'gehalt';
+      const restText = restTage === 0
+        ? (modusGehalt ? 'letzter Tag vor dem Gehaltseingang' : 'letzter Tag des Blatts')
+        : (restTage === 1 ? 'verbleibt 1 Tag' : 'verbleiben ' + restTage + ' Tage');
+      html += '<div class="frei">von ' + euro(zahlen.soll) + ' — der Kasse ' + restText + '</div>';
     }
   } else {
     html += '<div class="frei neutral">von ' + euro(zahlen.soll) + ' — Blatt geschlossen</div>';
@@ -1251,7 +1395,7 @@ function render() {
 
   /* Vermerk */
   const blattBuchungen = buchungenImBlatt(blatt).concat(
-    daten.bargeld.bewegungen.filter(c => c.datum.slice(0, 7) === blatt && c.kategorieId)
+    daten.bargeld.bewegungen.filter(c => c.kategorieId && blattVon(c.datum) === blatt)
   );
   if (blattBuchungen.length === 0) {
     html += '<p class="vermerk">Ein neues Blatt. Noch kein Eintrag verzeichnet.</p>';
@@ -1519,7 +1663,7 @@ function oeffnePostenDetail(kategorieId) {
     .filter(b => b.kategorieId === kategorieId)
     .map(b => ({ e: b, bar: false }))
     .concat(daten.bargeld.bewegungen
-      .filter(c => c.kategorieId === kategorieId && c.datum.slice(0, 7) === blatt)
+      .filter(c => c.kategorieId === kategorieId && blattVon(c.datum) === blatt)
       .map(c => ({ e: c, bar: true })))
     .sort((a, b) => b.e.datum.localeCompare(a.e.datum) || b.e.id.localeCompare(a.e.id));
 
@@ -1588,7 +1732,7 @@ function oeffneUmbuchen(buchungId, herkunftId) {
   if (!b) return;
   const posten = daten.kategorien.filter(k => istAusgabePosten(k) && !k.archiviert && k.id !== b.kategorieId)
     .sort((x, y) => (x.reihenfolge || 0) - (y.reihenfolge || 0) || x.name.localeCompare(y.name, 'de'));
-  const blatt = b.datum.slice(0, 7);
+  const blatt = blattVon(b.datum);
 
   let html = '<div class="zettel-titel">Umbuchen</div>';
   html += '<div class="korb-karte">';
@@ -2043,13 +2187,13 @@ function sichereSammelposten() {
 /* ── Einnahmen ── */
 
 function einnahmenImBlatt(blatt) {
-  return daten.buchungen.filter(b => b.datum.slice(0, 7) === blatt && b.betrag > 0 && b.kategorieId);
+  return daten.buchungen.filter(b => b.betrag > 0 && b.kategorieId && blattVon(b.datum) === blatt);
 }
 
 function einnahmeSumme(kategorieId, blatt) {
   let summe = 0;
   for (const b of daten.buchungen) {
-    if (b.kategorieId === kategorieId && b.datum.slice(0, 7) === blatt && b.betrag > 0) summe += b.betrag;
+    if (b.kategorieId === kategorieId && b.betrag > 0 && blattVon(b.datum) === blatt) summe += b.betrag;
   }
   return summe;
 }
@@ -2121,7 +2265,7 @@ function oeffneEinnahmeDetail(kategorieId) {
   if (!p) return;
   const bl = angezeigtesBlatt;
   const eintraege = daten.buchungen
-    .filter(b => b.kategorieId === kategorieId && b.datum.slice(0, 7) === bl && b.betrag > 0)
+    .filter(b => b.kategorieId === kategorieId && b.betrag > 0 && blattVon(b.datum) === bl)
     .sort((a, b) => b.datum.localeCompare(a.datum) || b.id.localeCompare(a.id));
 
   let html = '<div class="zettel-titel">Einnahme-Posten</div>';
@@ -3151,10 +3295,10 @@ function ausgabenEintraege(blatt) {
   const ausB = daten.buchungen.filter(b =>
     b.betrag < 0 && b.kategorieId && b.kategorieId !== ABHEBUNG_ID
     && istAusgabePosten(daten.kategorien.find(k => k.id === b.kategorieId))
-    && (!blatt || b.datum.slice(0, 7) === blatt));
+    && (!blatt || blattVon(b.datum) === blatt));
   const ausC = daten.bargeld.bewegungen.filter(c =>
     c.betrag < 0 && c.kategorieId
-    && (!blatt || c.datum.slice(0, 7) === blatt));
+    && (!blatt || blattVon(c.datum) === blatt));
   return ausB.concat(ausC);
 }
 
@@ -3358,6 +3502,88 @@ function oeffneVerlaufUeberBlaetter() {
   oeffneZettel(html);
 }
 
+/* ── Blattwechsel (Betriebsart) ── */
+
+function oeffneBlattwechsel() {
+  const modus = daten.settings.blattModus || 'kalender';
+  const posten = daten.kategorien.filter(k => istEinnahmePosten(k) && !k.archiviert)
+    .sort((a, b) => (a.reihenfolge || 0) - (b.reihenfolge || 0) || a.name.localeCompare(b.name, 'de'));
+  const gewaehlt = daten.settings.gehaltPostenId;
+
+  let html = '<div class="zettel-titel">Blattwechsel</div>';
+  html += '<p class="hinweistext">Wann beginnt ein neues Blatt?</p>';
+  html += '<div class="wahl2" style="margin-bottom:14px">';
+  html += '<button type="button" class="' + (modus === 'kalender' ? 'gewaehlt' : '') + '" onclick="setzeBlattModus(\'kalender\')">Monatserster</button>';
+  html += '<button type="button" class="' + (modus === 'gehalt' ? 'gewaehlt' : '') + '" onclick="setzeBlattModus(\'gehalt\')">Gehaltseingang</button>';
+  html += '</div>';
+
+  if (modus === 'gehalt') {
+    html += '<div class="buchtitel">Gehalts-Posten</div>';
+    html += '<p class="hinweistext">Jeder Eingang auf diesem Posten eröffnet ein neues Blatt. Ohne Zuordnung rechnet die App mit dem letzten Werktag des Vormonats.</p>';
+    if (posten.length === 0) {
+      html += '<p class="vermerk">Noch kein Einnahme-Posten angelegt.</p>';
+    } else {
+      html += '<div class="postenwahl">';
+      for (const p of posten) {
+        html += '<button type="button" class="wahl-posten" onclick="setzeGehaltPosten(\'' + p.id + '\')">'
+             + '<span class="w-name">' + escapeHtml(p.name) + '</span>'
+             + '<span class="w-rest">' + (gewaehlt === p.id ? 'gewählt' : '') + '</span></button>';
+      }
+      html += '<button type="button" class="wahl-posten" onclick="setzeGehaltPosten(null)">'
+           + '<span class="w-name">Keiner — nur letzter Werktag</span>'
+           + '<span class="w-rest">' + (!gewaehlt ? 'gewählt' : '') + '</span></button>';
+      html += '</div>';
+    }
+
+    const stichtage = gehaltsStichtage();
+    html += '<div class="buchtitel" style="margin-top:18px">Erkannte Stichtage</div>';
+    if (stichtage.length === 0) {
+      html += '<p class="hinweistext" style="text-align:center">Noch kein Gehaltseingang verzeichnet — die App rechnet mit dem letzten Werktag.</p>';
+    } else {
+      html += '<p class="hinweistext">' + stichtage.length + (stichtage.length === 1 ? ' Eingang' : ' Eingänge') + ' verzeichnet.</p>';
+    }
+  }
+
+  /* Zur Kontrolle: die tatsächlichen Grenzen der letzten Blätter */
+  html += '<div class="buchtitel" style="margin-top:18px">Blätter</div>';
+  html += '<div class="spaltenkopf"><span>Blatt</span><span></span><span>beginnt am</span></div>';
+  const g = blattGrenzen();
+  const sichtbar = g.reihe.filter(m => m <= monatPlus(aktuellesBlatt(), 1)).slice(-8);
+  for (const m of sichtbar) {
+    const echt = (daten.settings.blattModus === 'gehalt')
+      && gehaltsStichtage().indexOf(g.grenze[m]) >= 0;
+    html += '<div class="plan-zeile"><span class="p-name">' + escapeHtml(blattNameLang(m))
+         + (m === aktuellesBlatt() ? ' <em style="font-style:italic;font-size:0.78rem;color:var(--tinte-blass)">— aktuell</em>' : '')
+         + '</span><span class="p-betrag">' + datumKurz(g.grenze[m])
+         + (echt ? '' : ' <em style="font-style:italic;font-size:0.72rem;color:var(--tinte-blass)">gerechnet</em>')
+         + '</span></div>';
+  }
+  html += '<p class="rueck-fuss">„Gerechnet" heißt: ohne verzeichneten Gehaltseingang, ersatzweise letzter Werktag des Vormonats.</p>';
+
+  html += '<div class="knopfzeile"><button type="button" class="leise" onclick="oeffneVerwaltung()">Zurück</button></div>';
+  oeffneZettel(html);
+}
+
+function setzeBlattModus(modus) {
+  daten.settings.blattModus = modus;
+  speichere();
+  angezeigtesBlatt = aktuellesBlatt();
+  blattManuellGewaehlt = false;
+  render();
+  oeffneBlattwechsel();
+  zeigeQuittung('Verbucht.');
+}
+
+function setzeGehaltPosten(postenId) {
+  daten.settings.gehaltPostenId = postenId;
+  speichere();
+  angezeigtesBlatt = aktuellesBlatt();
+  blattManuellGewaehlt = false;
+  render();
+  oeffneBlattwechsel();
+  zeigeQuittung('Verbucht.');
+}
+
 /* ── Verwaltung (Sammelzugang) ── */
 
 function oeffneVerwaltung() {
@@ -3372,6 +3598,7 @@ function oeffneVerwaltung() {
     ['Regeln', 'oeffneRegeln()'],
     ['Beweggründe', 'oeffneBeweggruende()'],
     ['Frühere Blätter', 'oeffneBlattwahl()'],
+    ['Blattwechsel', 'oeffneBlattwechsel()'],
     ['Sicherung', 'oeffneSicherung()']
   ];
   for (const [name, fn] of punkte) {
@@ -3698,7 +3925,7 @@ function oeffneKorb() {
   }
   const gesamt = korbListe().length;
   const posten = ausgabePosten();
-  const blatt = b.datum.slice(0, 7);
+  const blatt = blattVon(b.datum);
   const teile = (b.text || '').split(' · ');
   const empf = teile[0] || '';
   const zweck = teile.slice(1).join(' · ');
