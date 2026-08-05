@@ -832,6 +832,8 @@
     font-weight: 600;
   }
   .plan-zwischensumme .p-betrag { font-variant-numeric: tabular-nums; }
+  .abschluss.ueberzogen { color: var(--siegellack); }
+  .abschluss.ueberzogen .betrag { border-bottom-color: var(--siegellack); }
 
   /* ── Rückschau ── */
   .rueck-satz {
@@ -3211,12 +3213,83 @@ function oeffnePlanung() {
     html += '<p class="vermerk">Restbestand eingetragen am ' + datumLang(plan.stand) + '.</p>';
   }
 
+  html += baueGegenueberstellung();
+
   html += '<div class="knopfzeile">';
   html += '<button type="button" class="leise" onclick="oeffneRestbestand()">Restbestand eintragen</button>';
   html += '<button type="button" class="leise" onclick="oeffneKorrektur()">Korrektur</button>';
   html += '</div>';
   html += '<div class="knopfzeile"><button type="button" class="leise" onclick="oeffneVerwaltung()">Zurück</button></div>';
   oeffneZettel(html);
+}
+
+function einnahmeSummeBlatt(blatt) {
+  let summe = 0;
+  for (const b of daten.buchungen) {
+    if (b.betrag > 0 && b.kategorieId
+        && istEinnahmePosten(daten.kategorien.find(k => k.id === b.kategorieId))
+        && blattVon(b.datum) === blatt) {
+      summe += b.betrag;
+    }
+  }
+  return Math.round(summe * 100) / 100;
+}
+
+function baueGegenueberstellung() {
+  const haushalt = haushaltsPosten().reduce((s, p) => s + (p.monatsbudget || 0), 0);
+  const giro = ausgabePosten().filter(p => (p.konto || 'haushalt') === 'giro')
+    .reduce((s, p) => s + (p.monatsbudget || 0), 0);
+  const gesamt = Math.round((haushalt + giro) * 100) / 100;
+
+  const blatt = aktuellesBlatt();
+  const einnahmen = einnahmeSummeBlatt(blatt);
+
+  let html = '<div class="buchtitel" style="margin-top:24px">Gegenüberstellung</div>';
+
+  if (gesamt === 0) {
+    html += '<p class="hinweistext" style="text-align:center">Noch kein Posten mit Soll-Betrag angelegt.</p>';
+    return html;
+  }
+
+  html += '<div class="plan-zeile"><span class="p-name">Posten · Haushaltskonto</span>'
+       + '<span class="p-betrag">' + euroOhneZeichen(haushalt) + '</span></div>';
+  html += '<div class="plan-zeile"><span class="p-name">Posten · Girokonto</span>'
+       + '<span class="p-betrag">' + euroOhneZeichen(giro) + '</span></div>';
+  html += '<div class="plan-zwischensumme"><span>Summe aller Posten</span>'
+       + '<span class="p-betrag">' + euroOhneZeichen(gesamt) + '</span></div>';
+
+  if (einnahmen === 0) {
+    html += '<div class="plan-zeile abzug"><span class="p-name">Einnahmen · Blatt '
+         + escapeHtml(blattName(blatt)) + '</span><span class="p-betrag">—</span></div>';
+    html += '<p class="rueck-fuss">Für dieses Blatt ist noch keine Einnahme verzeichnet. Sobald der Gehaltseingang eingelesen und einem Einnahme-Posten zugeordnet ist, erscheint hier die Gegenüberstellung.</p>';
+    return html;
+  }
+
+  html += '<div class="plan-zeile"><span class="p-name">Einnahmen · Blatt '
+       + escapeHtml(blattName(blatt)) + '</span>'
+       + '<span class="p-betrag">' + euroOhneZeichen(einnahmen) + '</span></div>';
+
+  const rest = Math.round((einnahmen - gesamt) * 100) / 100;
+  if (rest >= 0) {
+    html += '<div class="abschluss"><span>Bleibt</span><span class="betrag">' + euro(rest) + '</span></div>';
+  } else {
+    html += '<div class="abschluss ueberzogen"><span>Posten übersteigen die Einnahmen um</span>'
+         + '<span class="betrag">' + euro(-rest) + '</span></div>';
+  }
+
+  /* Die beiden vorigen Blätter zur Einordnung — ein einzelnes Blatt kann täuschen. */
+  const vorige = [];
+  for (let i = 1; i <= 2; i++) {
+    const bl = monatPlus(blatt, -i);
+    const e = einnahmeSummeBlatt(bl);
+    if (e > 0) vorige.push({ blatt: bl, summe: e });
+  }
+  if (vorige.length > 0) {
+    html += '<p class="rueck-fuss">Zum Vergleich: '
+         + vorige.map(v => escapeHtml(blattName(v.blatt)) + ' ' + euro(v.summe)).join(' · ') + '.</p>';
+  }
+  html += '<p class="rueck-fuss">Einnahmen des laufenden Blatts. Die Soll-Beträge gelten je Blatt; nur wenn ihre Summe unter den Einnahmen bleibt, trägt das Einkommen den Plan.</p>';
+  return html;
 }
 
 function oeffneRestbestand() {
