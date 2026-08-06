@@ -962,6 +962,24 @@ function ladeDaten() {
   }
 }
 
+/* Regeln auf getrennte Felder umstellen (v1.3). Idempotent und verlustfrei:
+   das ursprüngliche Volltextmuster bleibt im Feld `muster` unangetastet erhalten. */
+function normalisiereRegel(r) {
+  if (!r || typeof r !== 'object') return r;
+  if (r.feld === 'kombi') {
+    r.empfaenger = (r.empfaenger || '').trim();
+    r.zweck = (r.zweck || '').trim();
+    return r;
+  }
+  const alt = (r.muster || '').trim();
+  return Object.assign({}, r, {
+    feld: 'kombi',
+    empfaenger: alt,
+    zweck: '',
+    umgestellt: true
+  });
+}
+
 function migriere(d) {
   // Additive Felder aus Schema 1 absichern.
   const basis = leererBestand();
@@ -981,7 +999,7 @@ function migriere(d) {
   if (typeof d.settings.gehaltPostenId === 'undefined') d.settings.gehaltPostenId = null;
   d.kategorien = (d.kategorien || []).map(k => Object.assign({ archiviert: false, reihenfolge: 0 }, k));
   d.buchungen = d.buchungen || [];
-  d.regeln = d.regeln || [];
+  d.regeln = (d.regeln || []).map(normalisiereRegel);
   d.bargeld = d.bargeld || basis.bargeld;
   d.kredite = d.kredite || [];
 
@@ -2024,24 +2042,75 @@ function aktiveRegeln() {
   return daten.regeln.filter(r => r.aktiv);
 }
 
-function findeRegel(text) {
-  const t = (text || '').toLowerCase();
+/* Empfänger und Verwendungszweck einer Buchung.
+   Neue Buchungen tragen beide Felder getrennt; Altbestand wird am Trennzeichen zerlegt. */
+function buchungTeile(b) {
+  if (b && (typeof b.empfaenger === 'string' || typeof b.zweck === 'string')) {
+    return { empfaenger: b.empfaenger || '', zweck: b.zweck || '' };
+  }
+  const teile = ((b && b.text) || '').split(' · ');
+  return { empfaenger: teile[0] || '', zweck: teile.slice(1).join(' · ') };
+}
+
+/* Alle gesetzten Kriterien müssen treffen (UND). Ein leeres Feld wird nicht geprüft. */
+function regelTrifft(r, teile) {
+  const e = (r.empfaenger || '').toLowerCase().trim();
+  const z = (r.zweck || '').toLowerCase().trim();
+  if (!e && !z) return false;
+  if (e && !teile.empfaenger.toLowerCase().includes(e)) return false;
+  if (z && !teile.zweck.toLowerCase().includes(z)) return false;
+  return true;
+}
+
+function findeRegel(b) {
+  const teile = buchungTeile(b);
   for (const r of aktiveRegeln()) {
-    const muster = (r.muster || '').toLowerCase().trim();
-    if (muster && t.includes(muster)) return r;
+    if (regelTrifft(r, teile)) return r;
   }
   return null;
 }
 
-function musterVorschlag(text) {
-  // Erstes aussagekräftiges Wort des Empfängerteils.
-  const empf = (text || '').split(' · ')[0];
-  const woerter = empf.split(/[\s,.\/]+/).filter(w => w.length >= 3 && !/^\d+$/.test(w));
-  const uebergehen = ['visa', 'der', 'die', 'das', 'und', 'gmbh', 'ag', 'kg', 'ohg', 'mbh', 'europe', 'deutschland'];
+function regelBeschreibung(r) {
+  const e = (r.empfaenger || '').trim();
+  const z = (r.zweck || '').trim();
+  if (e && z) return e + ' + ' + z;
+  return e || z || '(ohne Muster)';
+}
+
+/* Wörter, die als Muster nichts taugen: Rechtsformen, Bankfloskeln, Referenzkürzel. */
+const VORSCHLAG_UEBERGEHEN = [
+  'visa', 'der', 'die', 'das', 'den', 'dem', 'und', 'für', 'fuer', 'von', 'vom', 'aus', 'mit',
+  'gmbh', 'ag', 'kg', 'ohg', 'mbh', 'ug', 'europe', 'deutschland', 'germany', 'gmbhcokg',
+  'sepa', 'lastschrift', 'basislastschrift', 'dauerauftrag', 'überweisung', 'ueberweisung',
+  'gutschrift', 'kartenzahlung', 'karte', 'kartenzahl', 'einzug', 'zahlung', 'buchung', 'beleg',
+  'eref', 'mref', 'cred', 'svwz', 'abwa', 'abwe', 'kref', 'ref', 'referenz', 'mandat',
+  'gläubiger', 'glaeubiger', 'gläubigerid', 'iban', 'bic', 'kfn', 'folgenr', 'verfalld',
+  'rechnung', 'rechnungsnr', 'kundennummer', 'kundennr', 'kundenreferenz', 'vertrag',
+  'vertragsnr', 'nummer', 'ihre', 'unsere', 'datum', 'uhr', 'nutzung', 'zwecks', 'verwendungszweck'
+];
+
+/* Erstes stabiles Wort einer Quelle. Alles mit Ziffern fällt weg — Referenznummern,
+   Datumsangaben und Kartenfolgenummern wechseln bei jeder Buchung. */
+function vorschlagsWort(quelle, ausser) {
+  const woerter = (quelle || '').split(/[\s,.\/\-:;+*#_|()\[\]]+/);
   for (const w of woerter) {
-    if (!uebergehen.includes(w.toLowerCase())) return w.toLowerCase();
+    const k = w.toLowerCase();
+    if (k.length < 3) continue;
+    if (/\d/.test(k)) continue;
+    if (VORSCHLAG_UEBERGEHEN.indexOf(k) >= 0) continue;
+    if (ausser && k === ausser) continue;
+    return k;
   }
-  return woerter.length ? woerter[0].toLowerCase() : '';
+  return '';
+}
+
+/* Ein Vorschlag, so genau wie möglich: Empfänger plus Verwendungszweck, wenn beides trägt. */
+function regelVorschlagFuer(b) {
+  const teile = buchungTeile(b);
+  const e = vorschlagsWort(teile.empfaenger);
+  const z = vorschlagsWort(teile.zweck, e);
+  if (!e && !z) return null;
+  return { empfaenger: e, zweck: z };
 }
 
 function postenName(kategorieId) {
@@ -2054,13 +2123,20 @@ function postenName(kategorieId) {
 
 function oeffneRegeln() {
   let html = '<div class="zettel-titel">Regeln</div>';
-  html += '<p class="hinweistext">Eine Regel ordnet eingelesene Buchungen selbsttätig einem Posten zu, wenn der Buchungstext das Muster enthält. Geprüft wird in dieser Reihenfolge; der erste Treffer gilt. Ein Beweggrund wird nie automatisch vergeben.</p>';
+  html += '<p class="hinweistext">Eine Regel ordnet eingelesene Buchungen selbsttätig einem Posten zu. Geprüft werden Empfänger und Verwendungszweck getrennt; sind beide Felder gefüllt, muss die Buchung beide enthalten. Geprüft wird in dieser Reihenfolge; der erste Treffer gilt. Ein Beweggrund wird nie automatisch vergeben.</p>';
+  const umgestellt = daten.regeln.filter(r => r.umgestellt).length;
+  if (umgestellt > 0) {
+    html += '<p class="hinweistext" style="color:var(--siegellack)">' + umgestellt
+         + (umgestellt === 1 ? ' Bestandsregel wurde' : ' Bestandsregeln wurden')
+         + ' auf das Feld „Empfänger" umgestellt. Traf ein Muster früher im Verwendungszweck, greift es dort nicht mehr — bitte die gekennzeichneten Regeln kurz durchsehen. Der Vermerk verschwindet, sobald die Regel bestätigt ist.</p>';
+  }
   if (daten.regeln.length === 0) {
     html += '<p class="vermerk">Noch keine Regel verzeichnet.</p>';
   } else {
     for (const r of daten.regeln) {
       html += '<button type="button" class="bg-zeile' + (r.aktiv ? '' : ' inaktiv') + '" onclick="oeffneRegelEditor(\'' + r.id + '\')">';
-      html += '<span class="b-name">' + escapeHtml(r.muster) + '</span>';
+      html += '<span class="b-name">' + escapeHtml(regelBeschreibung(r))
+           + (r.umgestellt ? ' <em style="font-style:italic;font-size:0.8rem;color:var(--siegellack)">— umgestellt</em>' : '') + '</span>';
       html += '<span class="b-standard">' + (r.aktiv ? '→ ' + escapeHtml(postenName(r.kategorieId)) : 'ruht') + '</span>';
       html += '</button>';
     }
@@ -2074,14 +2150,20 @@ function oeffneRegeln() {
 
 let regelEditorPosten = null;
 
-function oeffneRegelEditor(regelId, musterVorbelegt, postenVorbelegt) {
+function oeffneRegelEditor(regelId, vorbelegt, postenVorbelegt) {
   const r = regelId ? daten.regeln.find(x => x.id === regelId) : null;
   regelEditorPosten = r ? r.kategorieId : (postenVorbelegt || null);
+  const vorE = r ? (r.empfaenger || '') : ((vorbelegt && vorbelegt.empfaenger) || '');
+  const vorZ = r ? (r.zweck || '') : ((vorbelegt && vorbelegt.zweck) || '');
 
   let html = '<div class="zettel-titel">' + (r ? 'Regel' : 'Neue Regel') + '</div>';
-  html += '<div class="feldgruppe"><label for="rg-muster">Wenn der Buchungstext enthält</label>';
-  html += '<input class="feld" id="rg-muster" type="text" autocomplete="off" autocapitalize="none" value="'
-       + escapeHtml(r ? r.muster : (musterVorbelegt || '')) + '" placeholder="z. B. edeka"></div>';
+  html += '<div class="feldgruppe"><label for="rg-empfaenger">Wenn der Empfänger enthält</label>';
+  html += '<input class="feld" id="rg-empfaenger" type="text" autocomplete="off" autocapitalize="none" oninput="pruefeRegelWarnung()" value="'
+       + escapeHtml(vorE) + '" placeholder="z. B. edeka"></div>';
+  html += '<div class="feldgruppe"><label for="rg-zweck">und der Verwendungszweck enthält</label>';
+  html += '<input class="feld" id="rg-zweck" type="text" autocomplete="off" autocapitalize="none" oninput="pruefeRegelWarnung()" value="'
+       + escapeHtml(vorZ) + '" placeholder="frei lassen, wenn gleichgültig"></div>';
+  html += '<p class="hinweistext" id="rg-warnung" style="display:none;color:var(--siegellack)">Ohne Verwendungszweck greift die Regel auf <b>alle</b> Zahlungen an diesen Empfänger.</p>';
   html += '<div class="feldgruppe"><label>Dann verbuchen auf</label></div>';
   html += '<div class="postenwahl">';
   const posten = ausgabePosten();
@@ -2109,7 +2191,16 @@ function oeffneRegelEditor(regelId, musterVorbelegt, postenVorbelegt) {
   html += '<button type="button" class="knopf primaer" onclick="speichereRegel(' + (r ? '\'' + r.id + '\'' : 'null') + ')">Übernehmen</button>';
   html += '</div>';
   oeffneZettel(html);
-  if (!r && !musterVorbelegt) document.getElementById('rg-muster').focus();
+  pruefeRegelWarnung();
+  if (!r && !vorbelegt) document.getElementById('rg-empfaenger').focus();
+}
+
+function pruefeRegelWarnung() {
+  const fe = document.getElementById('rg-empfaenger');
+  const fz = document.getElementById('rg-zweck');
+  const w = document.getElementById('rg-warnung');
+  if (!fe || !fz || !w) return;
+  w.style.display = (fe.value.trim() && !fz.value.trim()) ? 'block' : 'none';
 }
 
 function waehleRegelPosten(kategorieId) {
@@ -2128,19 +2219,28 @@ function zeichneRegelPostenwahl() {
 }
 
 function speichereRegel(regelId) {
-  const muster = document.getElementById('rg-muster').value.trim();
-  if (!muster) { document.getElementById('rg-muster').focus(); return; }
+  const mEmpf = document.getElementById('rg-empfaenger').value.trim();
+  const mZweck = document.getElementById('rg-zweck').value.trim();
+  if (!mEmpf && !mZweck) {
+    zeigeQuittung('Empfänger oder Verwendungszweck angeben.');
+    document.getElementById('rg-empfaenger').focus();
+    return;
+  }
   if (!regelEditorPosten) { zeigeQuittung('Posten wählen.'); return; }
   if (regelId) {
     const r = daten.regeln.find(x => x.id === regelId);
     if (!r) return;
-    r.muster = muster;
+    r.feld = 'kombi';
+    r.empfaenger = mEmpf;
+    r.zweck = mZweck;
     r.kategorieId = regelEditorPosten;
+    delete r.umgestellt; // bestätigt — der Vermerk erlischt
   } else {
     daten.regeln.push({
       id: neueId('r'),
-      muster: muster,
-      feld: 'text',
+      feld: 'kombi',
+      empfaenger: mEmpf,
+      zweck: mZweck,
       kategorieId: regelEditorPosten,
       aktiv: true
     });
@@ -3892,7 +3992,7 @@ function fuehreImportDurch() {
 
     // Regelanwendung: Treffer werden unmittelbar verbucht (bestätigte Entscheidung zu v0.4).
     let kategorieId = null, autoZugeordnet = false;
-    const regel = findeRegel(text);
+    const regel = findeRegel({ empfaenger: empf, zweck: zweck });
     if (regel) {
       const ziel = daten.kategorien.find(k => k.id === regel.kategorieId);
       const passt = regel.kategorieId === ABHEBUNG_ID
@@ -3906,6 +4006,8 @@ function fuehreImportDurch() {
       datum: datum,
       betrag: betrag,
       text: text,
+      empfaenger: empf,
+      zweck: zweck,
       konto: konto,
       kategorieId: kategorieId,
       quelle: 'csv',
@@ -3947,23 +4049,24 @@ function regelVorschlagAnnehmen() {
   const v = regelVorschlagOffen;
   regelVorschlagOffen = null;
   if (!v) return;
-  daten.regeln.push({
+  const neueRegel = {
     id: neueId('r'),
-    muster: v.muster,
-    feld: 'text',
+    feld: 'kombi',
+    empfaenger: v.empfaenger || '',
+    zweck: v.zweck || '',
     kategorieId: v.kategorieId,
     aktiv: true
-  });
+  };
+  daten.regeln.push(neueRegel);
   // Regel sofort auf den übrigen Korb anwenden.
   let getroffen = 0;
   for (const b of korbListe()) {
-    if (b.betrag < 0 && findeRegel(b.text)) {
-      const r = findeRegel(b.text);
-      if (r && r.id === daten.regeln[daten.regeln.length - 1].id) {
-        b.kategorieId = r.kategorieId;
-        b.autoZugeordnet = true;
-        getroffen++;
-      }
+    if (b.betrag >= 0) continue;
+    const r = findeRegel(b);
+    if (r && r.id === neueRegel.id) {
+      b.kategorieId = r.kategorieId;
+      b.autoZugeordnet = true;
+      getroffen++;
     }
   }
   speichere();
@@ -3999,15 +4102,15 @@ function oeffneKorb() {
   const gesamt = korbListe().length;
   const posten = ausgabePosten();
   const blatt = blattVon(b.datum);
-  const teile = (b.text || '').split(' · ');
-  const empf = teile[0] || '';
-  const zweck = teile.slice(1).join(' · ');
+  const teile = buchungTeile(b);
+  const empf = teile.empfaenger;
+  const zweck = teile.zweck;
   const istEinnahme = b.betrag > 0;
 
   let html = '<div class="zettel-titel">Eingangskorb</div>';
   if (regelVorschlagOffen) {
     html += '<div class="regelvorschlag">';
-    html += '<span>Künftig immer <b>' + escapeHtml(regelVorschlagOffen.muster) + '</b> → '
+    html += '<span>Künftig immer <b>' + escapeHtml(regelBeschreibung(regelVorschlagOffen)) + '</b> → '
          + escapeHtml(postenName(regelVorschlagOffen.kategorieId)) + '?</span>';
     html += '<span class="rv-knoepfe">';
     html += '<button type="button" onclick="regelVorschlagAnnehmen()">Regel anlegen</button>';
@@ -4074,7 +4177,7 @@ function oeffneKorb() {
 function korbRegeltreffer() {
   const treffer = [];
   for (const b of korbListe()) {
-    const r = findeRegel(b.text);
+    const r = findeRegel(b);
     if (!r) continue;
     const ziel = daten.kategorien.find(k => k.id === r.kategorieId);
     const passt = r.kategorieId === ABHEBUNG_ID
@@ -4144,9 +4247,9 @@ function korbVerbuche(buchungId, kategorieId) {
   speichere();
 
   // Regelvorschlag: nur wenn keine Regel den Text bereits erfasst.
-  const muster = musterVorschlag(b.text);
-  if (muster && !findeRegel(b.text)) {
-    regelVorschlagOffen = { muster: muster, kategorieId: kategorieId };
+  const v = regelVorschlagFuer(b);
+  if (v && !findeRegel(b)) {
+    regelVorschlagOffen = { empfaenger: v.empfaenger, zweck: v.zweck, kategorieId: kategorieId };
   } else {
     regelVorschlagOffen = null;
     zeigeQuittung('Verbucht.');
