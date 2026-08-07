@@ -907,6 +907,7 @@
 
 const SPEICHER_SCHLUESSEL = 'fc_data_v1';
 const SCHEMA_VERSION = 2;
+const FASSUNG = '1.3.1';
 const EINNAHME_ID = 'k_einnahme'; // Sammelposten für Gutschriften ohne eigene Zuordnung
 const ABHEBUNG_ID = 'k_bargeldabhebung'; // Pseudo-Posten: erhöht die Kasse, nie budgetwirksam
 
@@ -4358,6 +4359,7 @@ function oeffneSicherung() {
        + '<input type="file" id="import-datei" accept=".json,application/json" style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden" onchange="pruefeImport(this)"></label>';
   html += '</div>';
   html += '<div id="import-vorschau"></div>';
+  html += '<p class="vermerk" style="text-align:center;margin-top:24px">Fassung ' + FASSUNG + ' · Datenschema ' + SCHEMA_VERSION + '</p>';
   html += '<div class="knopfzeile"><button type="button" class="leise" onclick="schliesseZettel()">Schließen</button></div>';
   oeffneZettel(html);
 }
