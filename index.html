@@ -555,6 +555,20 @@
     padding: 2px 0 0 0;
   }
   .e-vermerk.leer { text-decoration: underline; text-decoration-color: var(--linie); text-underline-offset: 3px; }
+  .eintragszeile button.e-bezeichnung {
+    flex-basis: 100%;
+    text-align: left;
+    font-style: normal;
+    font-size: 0.9rem;
+    color: var(--tinte);
+    padding: 1px 0 0 0;
+    line-height: 1.35;
+  }
+  .eintragszeile button.e-bezeichnung.offen {
+    white-space: normal;
+    color: var(--tinte-blass);
+    font-size: 0.82rem;
+  }
   .vermerk-editor {
     flex-basis: 100%;
     padding: 8px 0 4px;
@@ -907,7 +921,7 @@
 
 const SPEICHER_SCHLUESSEL = 'fc_data_v1';
 const SCHEMA_VERSION = 2;
-const FASSUNG = '1.3.1';
+const FASSUNG = '1.4';
 const EINNAHME_ID = 'k_einnahme'; // Sammelposten für Gutschriften ohne eigene Zuordnung
 const ABHEBUNG_ID = 'k_bargeldabhebung'; // Pseudo-Posten: erhöht die Kasse, nie budgetwirksam
 
@@ -1470,9 +1484,11 @@ function oeffneZettel(html) {
   schleier.classList.add('offen');
 }
 function schliesseZettel() {
+  uebernimmNotiz(vermerkEditorFuer);
   schleier.classList.remove('offen');
   zettel.innerHTML = '';
   vermerkEditorFuer = null;
+  volltextFuer = null;
 }
 schleier.addEventListener('click', e => { if (e.target === schleier) schliesseZettel(); });
 
@@ -1719,6 +1735,14 @@ function oeffnePostenDetail(kategorieId) {
       html += '<div class="eintragszeile" id="ez-' + b.id + '">';
       html += '<span class="e-datum">' + datumKurz(b.datum) + '</span>';
       html += '<span class="e-betrag">' + euro(-b.betrag) + '</span>';
+      const kurz = kurzbezeichnung(b);
+      if (volltextFuer === b.id) {
+        html += '<button type="button" class="e-bezeichnung offen" onclick="dreheVolltext(null, \'' + p.id + '\')">'
+             + escapeHtml(volltextVon(b) || '(ohne Text)') + '</button>';
+      } else if (kurz) {
+        html += '<button type="button" class="e-bezeichnung" onclick="dreheVolltext(\'' + b.id + '\', \'' + p.id + '\')">'
+             + escapeHtml(kurz) + '</button>';
+      }
       if (istAktuell) {
         if (!bar) {
           html += '<button type="button" onclick="oeffneUmbuchen(\'' + b.id + '\', \'' + p.id + '\')">umbuchen</button>';
@@ -1736,7 +1760,7 @@ function oeffnePostenDetail(kategorieId) {
       } else if (vt) {
         html += '<button type="button" class="e-vermerk" onclick="oeffneVermerkEditor(\'' + b.id + '\', \'' + p.id + '\')">' + escapeHtml(vt) + '</button>';
       } else {
-        html += '<button type="button" class="e-vermerk leer" onclick="oeffneVermerkEditor(\'' + b.id + '\', \'' + p.id + '\')">Vermerk setzen</button>';
+        html += '<button type="button" class="e-vermerk leer" onclick="oeffneVermerkEditor(\'' + b.id + '\', \'' + p.id + '\')">Vermerk oder Notiz</button>';
       }
       html += '</div>';
     }
@@ -1788,6 +1812,24 @@ function fuehreUmbuchungAus(buchungId, zielId, herkunftId) {
 /* ── Vermerk am Eintrag (nachträglich, F8.4) ── */
 
 let vermerkEditorFuer = null;
+let volltextFuer = null;
+
+function dreheVolltext(eintragId, kategorieId) {
+  uebernimmNotiz(vermerkEditorFuer);
+  volltextFuer = (volltextFuer === eintragId) ? null : eintragId;
+  oeffnePostenDetail(kategorieId);
+}
+
+/* Der Zettel wird bei jeder Änderung neu gezeichnet. Damit eine angefangene
+   Notiz dabei nicht verlorengeht, wird sie vorher aus dem Feld übernommen. */
+function uebernimmNotiz(eintragId) {
+  const f = document.getElementById('vm-notiz');
+  if (!f || !eintragId) return;
+  const e = findeEintrag(eintragId, false) || findeEintrag(eintragId, true);
+  if (!e) return;
+  const n = f.value.trim();
+  if ((e.notiz || '') !== n) { e.notiz = n; speichere(); }
+}
 
 function baueVermerkEditor(b, kategorieId, istBar) {
   const barFlag = istBar ? 'true' : 'false';
@@ -1798,6 +1840,8 @@ function baueVermerkEditor(b, kategorieId, istBar) {
     html += '<button type="button" class="stempel' + (gewaehlt ? ' gewaehlt' : '') + '" onclick="setzeVermerk(\'' + b.id + '\', \'' + g.id + '\', \'' + kategorieId + '\', ' + barFlag + ')">' + escapeHtml(g.name) + '</button>';
   }
   html += '</div>';
+  html += '<div class="feldgruppe" style="margin:10px 0 2px"><label for="vm-notiz">Notiz — freiwillig</label>';
+  html += '<input class="feld" id="vm-notiz" type="text" autocomplete="off" value="' + escapeHtml(b.notiz || '') + '" placeholder="wofür war das?"></div>';
   html += '<div class="editor-zeile">';
   if (b.beweggrundId) {
     const gp = b.geplant === true ? 'geplant' : (b.geplant === false ? 'ungeplant' : 'ohne Kennzeichen');
@@ -1815,11 +1859,13 @@ function oeffneVermerkEditor(buchungId, kategorieId) {
 }
 
 function schliesseVermerkEditor(kategorieId) {
+  uebernimmNotiz(vermerkEditorFuer);
   vermerkEditorFuer = null;
   oeffnePostenDetail(kategorieId);
 }
 
 function setzeVermerk(eintragId, beweggrundId, kategorieId, istBar) {
+  uebernimmNotiz(eintragId);
   const b = findeEintrag(eintragId, istBar);
   const g = beweggrund(beweggrundId);
   if (b && g && b.beweggrundId !== g.id) {
@@ -1831,6 +1877,7 @@ function setzeVermerk(eintragId, beweggrundId, kategorieId, istBar) {
 }
 
 function dreheGeplant(eintragId, kategorieId, istBar) {
+  uebernimmNotiz(eintragId);
   const b = findeEintrag(eintragId, istBar);
   if (b) {
     b.geplant = b.geplant === true ? false : true;
@@ -1840,6 +1887,7 @@ function dreheGeplant(eintragId, kategorieId, istBar) {
 }
 
 function entferneVermerk(eintragId, kategorieId, istBar) {
+  uebernimmNotiz(eintragId);
   const b = findeEintrag(eintragId, istBar);
   if (b) {
     b.beweggrundId = null;
@@ -2063,6 +2111,43 @@ function regelTrifft(r, teile) {
   return true;
 }
 
+/* ── Kurzbezeichnung eines Eintrags (v1.4) ──
+   Eine selbstgeschriebene Notiz geht immer vor. Sonst wird aus Empfänger und
+   Verwendungszweck eine lesbare Kurzform gebildet. Der Volltext bleibt in
+   `text` unangetastet und ist in der Postenansicht antippbar. */
+
+const EMPF_ANHAENGSEL = /\b(gmbh|mbh|ag|kg|ohg|ug|se|s\.?a\.?r\.?l\.?|et\s+cie|s\.?c\.?a\.?|co\.?\s?kg|inc|ltd|llc|b\.?v\.?|n\.?v\.?|europe|deutschland|germany)\b\.?/gi;
+
+function kappe(s, n) {
+  s = (s || '').trim();
+  return s.length > n ? s.slice(0, n - 1).replace(/[\s,.;:\-]+$/, '') + '…' : s;
+}
+
+function kurzEmpfaenger(quelle) {
+  let s = (quelle || '').replace(EMPF_ANHAENGSEL, ' ');
+  s = s.split(/[\s]+/).filter(w => !/^\d+$/.test(w)).join(' ');
+  return s.replace(/[\/\\|*#]+/g, ' ').replace(/\s{2,}/g, ' ').replace(/[\s,.;:\-]+$/, '').trim();
+}
+
+function kurzbezeichnung(e) {
+  if (e && e.notiz) return kappe(e.notiz, 45);
+  const teile = buchungTeile(e);
+  const empf = kurzEmpfaenger(teile.empfaenger);
+  const ersteEmpf = (tragfaehigeWoerter(teile.empfaenger)[0] || '').toLowerCase();
+  const stich = tragfaehigeWoerter(teile.zweck, ersteEmpf)[0] || '';
+  let s = empf;
+  if (stich) s = s ? s + ' · ' + stich : stich;
+  if (!s) s = (teile.empfaenger || teile.zweck || '').trim();
+  return kappe(s, 45);
+}
+
+function volltextVon(e) {
+  const teile = buchungTeile(e);
+  const roh = (e && e.text) || [teile.empfaenger, teile.zweck].filter(Boolean).join(' · ');
+  if (e && e.notiz && roh) return e.notiz + ' — ' + roh;
+  return e && e.notiz ? e.notiz : roh;
+}
+
 function findeRegel(b) {
   const teile = buchungTeile(b);
   for (const r of aktiveRegeln()) {
@@ -2090,19 +2175,25 @@ const VORSCHLAG_UEBERGEHEN = [
   'vertragsnr', 'nummer', 'ihre', 'unsere', 'datum', 'uhr', 'nutzung', 'zwecks', 'verwendungszweck'
 ];
 
-/* Erstes stabiles Wort einer Quelle. Alles mit Ziffern fällt weg — Referenznummern,
-   Datumsangaben und Kartenfolgenummern wechseln bei jeder Buchung. */
-function vorschlagsWort(quelle, ausser) {
-  const woerter = (quelle || '').split(/[\s,.\/\-:;+*#_|()\[\]]+/);
-  for (const w of woerter) {
+/* Erste tragfähige Wörter einer Quelle, in ursprünglicher Schreibung.
+   Alles mit Ziffern fällt weg — Referenznummern, Datumsangaben und
+   Kartenfolgenummern wechseln bei jeder Buchung. */
+function tragfaehigeWoerter(quelle, ausser) {
+  const raus = [];
+  for (const w of (quelle || '').split(/[\s,.\/\-:;+*#_|()\[\]]+/)) {
     const k = w.toLowerCase();
     if (k.length < 3) continue;
     if (/\d/.test(k)) continue;
     if (VORSCHLAG_UEBERGEHEN.indexOf(k) >= 0) continue;
     if (ausser && k === ausser) continue;
-    return k;
+    raus.push(w);
   }
-  return '';
+  return raus;
+}
+
+function vorschlagsWort(quelle, ausser) {
+  const w = tragfaehigeWoerter(quelle, ausser);
+  return w.length ? w[0].toLowerCase() : '';
 }
 
 /* Ein Vorschlag, so genau wie möglich: Empfänger plus Verwendungszweck, wenn beides trägt. */
