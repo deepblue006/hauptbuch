@@ -889,6 +889,117 @@
   .rueck-zeile.schmal { padding-bottom: 8px; border-bottom: 1px solid var(--linie); }
   .tintenlinie.ruecklinie { margin: 5px 0 3px; }
 
+  /* ── Abschluss des Blattes ── */
+  .abs-kopf {
+    text-align: center;
+    padding: 14px 0 16px;
+    border-bottom: 1px solid var(--linie);
+  }
+  .abs-kopf .zettel {
+    font-size: 0.7rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--tinte-blass);
+  }
+  .abs-kopf .betrag {
+    font-family: 'IM Fell DW Pica', serif;
+    font-size: 2.6rem;
+    line-height: 1.15;
+    font-variant-numeric: tabular-nums;
+    margin-top: 4px;
+  }
+  .abs-kopf .betrag small { font-size: 1.3rem; color: var(--tinte-blass); }
+  .abs-kopf .unter {
+    font-style: italic;
+    font-size: 0.86rem;
+    color: var(--tinte-blass);
+    margin-top: 2px;
+  }
+  .abs-kopf .betrag.minus { color: var(--siegellack); }
+
+  .abs-zeile {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    padding: 8px 2px;
+    font-size: 0.94rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .abs-zeile + .abs-zeile { border-top: 1px solid var(--linie); }
+  .abs-zeile .l i { font-style: italic; font-size: 0.8rem; color: var(--tinte-blass); }
+  .abs-zeile .r { font-weight: 600; white-space: nowrap; }
+  .abs-zeile .r.haben { color: var(--haben-gruen); }
+  .abs-zeile .r.soll { color: var(--siegellack); }
+
+  .abs-fuss {
+    font-style: italic;
+    font-size: 0.8rem;
+    color: var(--tinte-blass);
+    line-height: 1.5;
+    padding: 10px 2px 0;
+  }
+  .abs-fuss b { font-style: normal; font-weight: 600; }
+
+  .befund { padding: 12px 2px; border-bottom: 1px solid var(--linie); }
+  .befund:last-child { border-bottom: none; }
+  .befund .kern { font-size: 0.94rem; line-height: 1.5; }
+  .befund .kern b { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .befund .kern b.soll { color: var(--siegellack); }
+  .befund .grund {
+    font-size: 0.83rem;
+    font-style: italic;
+    color: var(--tinte-blass);
+    margin-top: 4px;
+    line-height: 1.45;
+  }
+  .befund .rat {
+    font-size: 0.83rem;
+    font-style: italic;
+    margin-top: 6px;
+    padding-left: 11px;
+    border-left: 2px solid var(--gold);
+    line-height: 1.45;
+  }
+
+  .abs-posten {
+    display: grid;
+    grid-template-columns: 1fr 58px 58px 68px;
+    gap: 8px;
+    align-items: baseline;
+    padding: 10px 2px 2px;
+    font-variant-numeric: tabular-nums;
+  }
+  .abs-posten .name { font-size: 0.94rem; font-weight: 500; }
+  .abs-posten .z { text-align: right; font-size: 0.86rem; }
+  .abs-posten .z.soll { color: var(--tinte-blass); }
+  .abs-posten .z.abw { font-weight: 600; }
+  .abs-posten .tintenlinie { grid-column: 1 / -1; margin: 5px 0 7px; }
+  .abs-posten.ueber .tintenlinie i { background: var(--siegellack); }
+  .abs-posten.ueber .z.ist, .abs-posten.ueber .z.abw { color: var(--siegellack); }
+  .abs-posten.unter .z.abw { color: var(--haben-gruen); }
+  .spaltenkopf.vier {
+    display: grid;
+    grid-template-columns: 1fr 58px 58px 68px;
+    gap: 8px;
+  }
+  .spaltenkopf.vier span:not(:first-child) { text-align: right; min-width: 0; }
+
+  .abs-liste .zeile {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 10px;
+    align-items: baseline;
+    padding: 9px 2px;
+    border-bottom: 1px solid var(--linie);
+    font-variant-numeric: tabular-nums;
+  }
+  .abs-liste .zeile:last-child { border-bottom: none; }
+  .abs-liste .n { font-size: 0.92rem; font-weight: 500; }
+  .abs-liste .n i { font-weight: 400; font-style: italic; font-size: 0.77rem; color: var(--tinte-blass); display: block; }
+  .abs-liste .anz { font-size: 0.8rem; font-style: italic; color: var(--tinte-blass); text-align: right; }
+  .abs-liste .b { font-weight: 600; text-align: right; min-width: 72px; }
+
   @media (prefers-reduced-motion: reduce) {
     .siegel, .knopf, .quittung, .streifen { transition: none; }
   }
@@ -921,7 +1032,7 @@
 
 const SPEICHER_SCHLUESSEL = 'fc_data_v1';
 const SCHEMA_VERSION = 2;
-const FASSUNG = '1.4.1';
+const FASSUNG = '1.5';
 const EINNAHME_ID = 'k_einnahme'; // Sammelposten für Gutschriften ohne eigene Zuordnung
 const ABHEBUNG_ID = 'k_bargeldabhebung'; // Pseudo-Posten: erhöht die Kasse, nie budgetwirksam
 
@@ -3849,12 +3960,557 @@ function setzeGehaltPosten(postenId) {
   zeigeQuittung('Verbucht.');
 }
 
+/* ════════════════ Abschluss des Blattes ════════════════
+   Anders als die Rückschau (F10) darf der Abschluss das Zahlenwerk bewerten:
+   Abweichungen benennen, Ursachen zerlegen, Sparhebel beziffern (F13).
+   Beweggründe bleiben auch hier beschreibend — gedeutet wird nie, warum
+   gekauft wurde, sondern nur, was und wie viel.
+
+   Alle Angaben entstehen aus vorhandenen Daten. Keine Eingabe, kein
+   gespeicherter Wert, keine Schemaänderung.                                */
+
+const ABSCHLUSS = {
+  vergleichsBlaetter: 6,   // Vergleichsfenster
+  wiederholung: 3,         // Blätter in Folge für einen Wiederholungsbefund
+  ausschlagFaktor: 1.30,   // Ist ≥ 130 % des Schnitts
+  ausschlagMindest: 20,    // … und mindestens 20 € darüber
+  haeufungAnzahl: 5,       // Empfänger ab 5 Buchungen im Blatt
+  haeufungFaktor: 2,       // … und mindestens doppelt so oft wie sonst
+  klumpenAnteil: 0.60,     // wenige Einträge tragen 60 % eines Postens
+  reserveAnteil: 0.70,     // dauerhaft unter 70 % des Solls
+  aenderungFaktor: 1.15    // ab hier gilt „öfter" bzw. „teurer"
+};
+
+let abschlussPuffer = null;
+
+function abschlussPufferLeeren() { abschlussPuffer = null; }
+
+function blattAuszug(blatt) {
+  if (!abschlussPuffer) abschlussPuffer = new Map();
+  if (abschlussPuffer.has(blatt)) return abschlussPuffer.get(blatt);
+  const eintraege = ausgabenEintraege(blatt);
+  const jePosten = new Map();
+  for (const e of eintraege) {
+    let m = jePosten.get(e.kategorieId);
+    if (!m) { m = { anzahl: 0, summe: 0, eintraege: [] }; jePosten.set(e.kategorieId, m); }
+    m.anzahl++;
+    m.summe += Math.abs(e.betrag);
+    m.eintraege.push(e);
+  }
+  const auszug = { eintraege: eintraege, jePosten: jePosten };
+  abschlussPuffer.set(blatt, auszug);
+  return auszug;
+}
+
+function postenImBlatt(kategorieId, blatt) {
+  const m = blattAuszug(blatt).jePosten.get(kategorieId);
+  if (!m) return { anzahl: 0, summe: 0, schnitt: 0, eintraege: [] };
+  return { anzahl: m.anzahl, summe: m.summe, schnitt: m.summe / m.anzahl, eintraege: m.eintraege };
+}
+
+function frueherBlaetter(blatt, anzahl) {
+  const alle = alleBlaetter().slice().sort();
+  const i = alle.indexOf(blatt);
+  if (i <= 0) return [];
+  return alle.slice(Math.max(0, i - anzahl), i);
+}
+
+function eintragEmpfaenger(e) {
+  if (typeof e.empfaenger === 'string' || typeof e.text === 'string') {
+    const t = buchungTeile(e);
+    const name = (t.empfaenger || t.zweck || '').trim();
+    return name || 'Ohne Empfänger';
+  }
+  return (e.notiz || '').trim() || 'Barausgabe';
+}
+
+function mittel(reihe, feld) {
+  if (!reihe.length) return 0;
+  return reihe.reduce((s, x) => s + x[feld], 0) / reihe.length;
+}
+
+/* ── Zahlenwerk ─────────────────────────────────────────── */
+
+function abschlussZahlen(blatt) {
+  const frueher = frueherBlaetter(blatt, ABSCHLUSS.vergleichsBlaetter);
+  const zeilen = [];
+  let fest = 0, variabel = 0, sollVariabel = 0, sollFest = 0;
+
+  for (const p of sichtbarePosten(blatt)) {
+    const jetzt = postenImBlatt(p.id, blatt);
+    const soll = p.archiviert ? 0 : (p.monatsbudget || 0);
+    if (jetzt.summe === 0 && soll === 0) continue;
+
+    const reihe = frueher.map(bl => postenImBlatt(p.id, bl));
+    const mitEintraegen = reihe.filter(x => x.anzahl > 0);
+    const summeFrueher = mittel(mitEintraegen, 'summe');
+    const anzahlFrueher = mittel(mitEintraegen, 'anzahl');
+    const einzelFrueher = mitEintraegen.length
+      ? mitEintraegen.reduce((s, x) => s + x.summe, 0) / mitEintraegen.reduce((s, x) => s + x.anzahl, 0)
+      : 0;
+
+    // Folgen: wie viele Blätter in Folge über bzw. deutlich unter dem Soll,
+    // gemessen am heutigen Soll (historische Sollwerte werden nicht gespeichert).
+    let folgeUeber = 0, folgeUnter = 0;
+    if (soll > 0) {
+      if (jetzt.summe > soll) {
+        folgeUeber = 1;
+        for (let i = reihe.length - 1; i >= 0; i--) {
+          if (reihe[i].summe > soll) folgeUeber++; else break;
+        }
+      }
+      if (jetzt.summe < soll * ABSCHLUSS.reserveAnteil) {
+        folgeUnter = 1;
+        for (let i = reihe.length - 1; i >= 0; i--) {
+          if (reihe[i].anzahl > 0 && reihe[i].summe < soll * ABSCHLUSS.reserveAnteil) folgeUnter++;
+          else break;
+        }
+      }
+    }
+
+    // Klumpen: wenige Einträge tragen den Großteil des Postens
+    const sortiert = jetzt.eintraege.slice().sort((a, b) => Math.abs(b.betrag) - Math.abs(a.betrag));
+    let klumpen = null;
+    for (const n of [1, 2, 3]) {
+      if (sortiert.length <= n) break;
+      const teil = sortiert.slice(0, n).reduce((s, e) => s + Math.abs(e.betrag), 0);
+      if (jetzt.summe > 0 && teil / jetzt.summe >= ABSCHLUSS.klumpenAnteil) {
+        klumpen = { anzahl: n, summe: teil, anteil: teil / jetzt.summe, eintraege: sortiert.slice(0, n) };
+        break;
+      }
+    }
+
+    const zeile = {
+      id: p.id, name: p.name, konto: p.konto, archiviert: !!p.archiviert,
+      soll: soll, ist: jetzt.summe, anzahl: jetzt.anzahl, schnitt: jetzt.schnitt,
+      abweichung: jetzt.summe - soll,
+      summeFrueher: summeFrueher, anzahlFrueher: anzahlFrueher, einzelFrueher: einzelFrueher,
+      vergleichsblaetter: mitEintraegen.length,
+      folgeUeber: folgeUeber, folgeUnter: folgeUnter,
+      klumpen: klumpen, eintraege: sortiert
+    };
+    zeilen.push(zeile);
+    if (p.konto === 'giro') { fest += jetzt.summe; sollFest += soll; }
+    else { variabel += jetzt.summe; sollVariabel += soll; }
+  }
+
+  const einnahmen = einnahmenImBlatt(blatt).reduce((s, b) => s + b.betrag, 0);
+
+  // Empfänger — nur veränderliche Posten: Miete und Versicherung stünden sonst
+  // jeden Monat oben und wären doch kein Hebel.
+  const auszug = blattAuszug(blatt);
+  const veraenderlich = new Set(daten.kategorien
+    .filter(k => istAusgabePosten(k) && k.konto !== 'giro').map(k => k.id));
+  const variableEintraege = auszug.eintraege.filter(e => veraenderlich.has(e.kategorieId));
+  const jeEmpfaenger = new Map();
+  for (const e of variableEintraege) {
+    const name = eintragEmpfaenger(e);
+    const schluessel = name.toLowerCase();
+    let m = jeEmpfaenger.get(schluessel);
+    if (!m) { m = { name: name, anzahl: 0, summe: 0, posten: new Set() }; jeEmpfaenger.set(schluessel, m); }
+    m.anzahl++;
+    m.summe += Math.abs(e.betrag);
+    if (e.kategorieId) m.posten.add(e.kategorieId);
+  }
+  const empfaenger = Array.from(jeEmpfaenger.values())
+    .sort((a, b) => b.summe - a.summe || b.anzahl - a.anzahl);
+
+  // Empfängerhäufigkeit früherer Blätter (für den Häufungsbefund)
+  const empfaengerFrueher = new Map();
+  for (const bl of frueher) {
+    const gezaehlt = new Map();
+    for (const e of blattAuszug(bl).eintraege) {
+      if (!veraenderlich.has(e.kategorieId)) continue;
+      const s = eintragEmpfaenger(e).toLowerCase();
+      gezaehlt.set(s, (gezaehlt.get(s) || 0) + 1);
+    }
+    for (const [s, n] of gezaehlt) {
+      let r = empfaengerFrueher.get(s);
+      if (!r) { r = { summe: 0, hoechste: 0, blaetter: 0 }; empfaengerFrueher.set(s, r); }
+      r.summe += n;
+      r.blaetter++;
+      if (n > r.hoechste) r.hoechste = n;
+    }
+  }
+
+  const groesste = variableEintraege.slice()
+    .sort((a, b) => Math.abs(b.betrag) - Math.abs(a.betrag)).slice(0, 5);
+
+  return {
+    blatt: blatt,
+    laeuftNoch: blatt === aktuellesBlatt(),
+    frueher: frueher,
+    zeilen: zeilen,
+    einnahmen: einnahmen,
+    fest: fest, variabel: variabel,
+    sollFest: sollFest, sollVariabel: sollVariabel,
+    verblieben: einnahmen - fest - variabel,
+    empfaenger: empfaenger,
+    empfaengerFrueher: empfaengerFrueher,
+    groesste: groesste,
+    eintraegeGesamt: auszug.eintraege.length
+  };
+}
+
+function verbliebenFrueher(blatt) {
+  const z = { einnahmen: einnahmenImBlatt(blatt).reduce((s, b) => s + b.betrag, 0), aus: 0 };
+  for (const m of blattAuszug(blatt).jePosten.values()) z.aus += m.summe;
+  return z.einnahmen - z.aus;
+}
+
+/* ── Prüfvermerke ───────────────────────────────────────── */
+
+function ursachenSatz(z) {
+  // Trieb die Anzahl oder der einzelne Betrag? Nur mit Vergleichsblättern.
+  if (!z.vergleichsblaetter || !z.anzahl) return '';
+  const oefter = z.anzahlFrueher > 0 && z.anzahl >= z.anzahlFrueher * ABSCHLUSS.aenderungFaktor;
+  const teurer = z.einzelFrueher > 0 && z.schnitt >= z.einzelFrueher * ABSCHLUSS.aenderungFaktor;
+  const anz = z.anzahlFrueher.toFixed(z.anzahlFrueher < 10 ? 1 : 0).replace('.', ',');
+  if (teurer && !oefter) {
+    const gleich = Math.abs(z.anzahl - z.anzahlFrueher) < 0.5;
+    return (gleich ? 'Gleich oft eingekauft (' + z.anzahl + ' Einträge)'
+                   : 'Nicht öfter eingekauft (' + z.anzahl + ' statt ' + anz + ' im Schnitt)')
+      + ', aber teurer: der einzelne Eintrag stieg von ' + euro(z.einzelFrueher)
+      + ' auf ' + euro(z.schnitt) + '.';
+  }
+  if (oefter && !teurer) {
+    return 'Öfter: ' + z.anzahl + ' Einträge statt ' + anz + ' im Schnitt. '
+      + 'Der einzelne Eintrag kostete wie gewohnt (' + euro(z.schnitt) + ').';
+  }
+  if (oefter && teurer) {
+    return 'Beides: ' + z.anzahl + ' Einträge statt ' + anz + ' im Schnitt, und der einzelne stieg von '
+      + euro(z.einzelFrueher) + ' auf ' + euro(z.schnitt) + '.';
+  }
+  return 'Weder deutlich öfter noch deutlich teurer: ' + z.anzahl + ' Einträge zu im Schnitt '
+    + euro(z.schnitt) + ' (sonst ' + anz + ' zu ' + euro(z.einzelFrueher) + '). '
+    + 'Die Überschreitung verteilt sich.';
+}
+
+function klumpenSatz(z) {
+  if (!z.klumpen) return '';
+  const k = z.klumpen;
+  const namen = k.eintraege.map(e => eintragEmpfaenger(e) + ' ' + euro(Math.abs(e.betrag))).join(' · ');
+  return (k.anzahl === 1 ? 'Ein Eintrag trägt ' : k.anzahl + ' Einträge tragen ')
+    + Math.round(k.anteil * 100) + ' % der Summe: ' + namen + '.';
+}
+
+function aufGlatt(betrag, schritt) {
+  return Math.max(schritt, Math.round(betrag / schritt) * schritt);
+}
+
+function abschlussBefunde(z) {
+  const befunde = [];
+
+  /* 1–4 · Posten über dem Soll */
+  const ueber = z.zeilen.filter(p => p.soll > 0 && p.ist > p.soll)
+    .sort((a, b) => b.abweichung - a.abweichung);
+  for (const p of ueber) {
+    let kern = '<b>' + escapeHtml(p.name) + '</b> übersteigt das Soll um <b class="soll">'
+      + euro(p.abweichung) + '</b>';
+    if (p.folgeUeber >= ABSCHLUSS.wiederholung) {
+      kern += ' — zum ' + p.folgeUeber + '. Blatt in Folge';
+    }
+    kern += '.';
+    const teile = [ursachenSatz(p), klumpenSatz(p)].filter(Boolean);
+
+    let rat = '';
+    if (p.folgeUeber >= ABSCHLUSS.wiederholung) {
+      rat = 'Drei Blätter in Folge über dem Soll heißt: entweder die Ausgaben senken — oder das Soll '
+          + 'ehrlich auf ' + euro(aufGlatt(p.ist, 10)) + ' heben und die '
+          + euro(aufGlatt(p.ist, 10) - p.soll) + ' an anderer Stelle einsparen.';
+    } else if (p.einzelFrueher > 0 && p.schnitt >= p.einzelFrueher * ABSCHLUSS.aenderungFaktor) {
+      rat = 'Zurück auf den gewohnten Einzelbetrag von ' + euro(p.einzelFrueher) + ' hätte '
+          + euro((p.schnitt - p.einzelFrueher) * p.anzahl) + ' gespart.';
+    } else if (p.anzahlFrueher > 0 && p.anzahl >= p.anzahlFrueher * ABSCHLUSS.aenderungFaktor) {
+      const traegt = Math.floor(p.soll / Math.max(0.01, p.schnitt));
+      rat = 'Das Soll von ' + euro(p.soll) + ' trägt etwa ' + traegt + ' Einträge dieser Größe; '
+          + 'verzeichnet sind ' + p.anzahl + '.';
+    } else if (p.klumpen) {
+      rat = 'Ohne ' + (p.klumpen.anzahl === 1 ? 'diesen einen Eintrag' : 'diese ' + p.klumpen.anzahl + ' Einträge')
+          + ' hätte der Posten sein Soll gehalten.';
+    }
+    befunde.push({ kern: kern, grund: teile.join(' '), rat: rat });
+  }
+
+  /* 3 · Ausschlag gegen den eigenen Schnitt, auch ohne Soll */
+  for (const p of z.zeilen) {
+    if (p.soll > 0 && p.ist > p.soll) continue;         // schon oben verzeichnet
+    if (!p.vergleichsblaetter || p.summeFrueher <= 0) continue;
+    if (p.ist < p.summeFrueher * ABSCHLUSS.ausschlagFaktor) continue;
+    if (p.ist - p.summeFrueher < ABSCHLUSS.ausschlagMindest) continue;
+    const kern = '<b>' + escapeHtml(p.name) + '</b>: <b class="soll">' + euro(p.ist)
+      + '</b> gegen ' + euro(p.summeFrueher) + ' im Schnitt der letzten '
+      + p.vergleichsblaetter + ' Blätter mit Einträgen.';
+    befunde.push({ kern: kern, grund: [ursachenSatz(p), klumpenSatz(p)].filter(Boolean).join(' '), rat: '' });
+  }
+
+  /* 5 · Häufung bei einem Empfänger */
+  for (const e of z.empfaenger) {
+    if (e.anzahl < ABSCHLUSS.haeufungAnzahl) continue;
+    const f = z.empfaengerFrueher.get(e.name.toLowerCase());
+    const schnitt = f && f.blaetter ? f.summe / f.blaetter : 0;
+    if (schnitt > 0 && e.anzahl < schnitt * ABSCHLUSS.haeufungFaktor) continue;
+    let kern = '<b>' + escapeHtml(e.name) + '</b>: ' + e.anzahl + ' Einträge über zusammen <b>'
+      + euro(e.summe) + '</b>';
+    if (f && f.hoechste && e.anzahl > f.hoechste) {
+      kern += ' — so viele wie in keinem der letzten ' + f.blaetter + ' Blätter (Schnitt: '
+        + schnitt.toFixed(1).replace('.', ',') + ')';
+    } else if (schnitt > 0) {
+      kern += ' — sonst ' + schnitt.toFixed(1).replace('.', ',') + ' im Schnitt';
+    }
+    kern += '.';
+    const namen = Array.from(e.posten).map(id => postenName(id)).filter(Boolean);
+    befunde.push({
+      kern: kern,
+      grund: namen.length > 1 ? 'Verteilt auf ' + namen.join(', ') + '.' : '',
+      rat: ''
+    });
+  }
+
+  /* 7 · Stille Reserve */
+  for (const p of z.zeilen) {
+    if (p.folgeUnter < ABSCHLUSS.wiederholung) continue;
+    const kern = '<b>' + escapeHtml(p.name) + '</b> bleibt zum ' + p.folgeUnter
+      + '. Blatt in Folge unter ' + Math.round(ABSCHLUSS.reserveAnteil * 100) + ' % des Solls ('
+      + euro(p.ist) + ' von ' + euro(p.soll) + ').';
+    const neu = aufGlatt(Math.max(p.ist, p.summeFrueher), 10);
+    befunde.push({
+      kern: kern, grund: '',
+      rat: 'Das Soll auf ' + euro(neu) + ' senken schafft ' + euro(p.soll - neu)
+         + ' Luft — ohne dass insgesamt mehr ausgegeben wird.'
+    });
+  }
+
+  return befunde;
+}
+
+/* ── Sparpotenzial ──────────────────────────────────────── */
+
+function sparpotenzial(z) {
+  const hebel = [];
+  const ueber = z.zeilen.filter(p => p.soll > 0 && p.ist > p.soll);
+  const gesamt = ueber.reduce((s, p) => s + p.abweichung, 0);
+
+  for (const p of ueber.sort((a, b) => b.abweichung - a.abweichung)) {
+    if (p.einzelFrueher > 0 && p.schnitt >= p.einzelFrueher * ABSCHLUSS.aenderungFaktor) {
+      hebel.push({
+        name: p.name, wie: 'Einträge zurück auf den gewohnten Betrag von ' + euro(p.einzelFrueher),
+        betrag: (p.schnitt - p.einzelFrueher) * p.anzahl
+      });
+    } else if (p.anzahlFrueher > 0 && p.anzahl >= p.anzahlFrueher * ABSCHLUSS.aenderungFaktor) {
+      const weniger = Math.max(1, Math.round(p.anzahl - p.anzahlFrueher));
+      hebel.push({
+        name: p.name, wie: weniger + (weniger === 1 ? ' Eintrag' : ' Einträge') + ' weniger',
+        betrag: weniger * p.schnitt
+      });
+    } else {
+      hebel.push({ name: p.name, wie: 'zurück auf das Soll von ' + euro(p.soll), betrag: p.abweichung });
+    }
+  }
+
+  for (const p of z.zeilen) {
+    if (p.folgeUnter < ABSCHLUSS.wiederholung) continue;
+    const neu = aufGlatt(Math.max(p.ist, p.summeFrueher), 10);
+    if (p.soll - neu <= 0) continue;
+    hebel.push({ name: p.name, wie: 'Soll auf ' + euro(neu) + ' senken und umwidmen', betrag: p.soll - neu });
+  }
+
+  return { gesamt: gesamt, hebel: hebel };
+}
+
+/* ── Ansicht ────────────────────────────────────────────── */
+
+let abschlussBlatt = null;
+
+function oeffneAbschluss(blatt) {
+  abschlussPufferLeeren();
+  if (blatt) abschlussBlatt = blatt;
+  if (!abschlussBlatt || alleBlaetter().indexOf(abschlussBlatt) < 0) abschlussBlatt = aktuellesBlatt();
+  const bl = abschlussBlatt;
+  const z = abschlussZahlen(bl);
+
+  let html = '<div class="zettel-titel">Abschluss · ' + escapeHtml(blattName(bl)) + '</div>';
+
+  html += '<div class="streifen-reihe" style="margin-bottom:10px">';
+  for (const b of alleBlaetter().slice(0, 12)) {
+    html += '<button type="button" class="stempel' + (b === bl ? ' gewaehlt' : '')
+         + '" onclick="waehleAbschlussBlatt(\'' + b + '\')">' + escapeHtml(blattName(b)) + '</button>';
+  }
+  html += '</div>';
+
+  if (z.eintraegeGesamt === 0 && z.einnahmen === 0) {
+    html += '<p class="vermerk">Für dieses Blatt ist nichts verzeichnet.</p>';
+    html += '<div class="knopfzeile"><button type="button" class="leise" onclick="oeffneVerwaltung()">Zurück</button></div>';
+    oeffneZettel(html);
+    return;
+  }
+
+  /* Kopf */
+  html += '<div class="abs-kopf">';
+  html += '<div class="zettel">' + (z.laeuftNoch ? 'Bislang verblieben' : 'Verblieben in diesem Blatt') + '</div>';
+  html += '<div class="betrag' + (z.verblieben < 0 ? ' minus' : '') + '">' + euro(z.verblieben) + '</div>';
+  html += '<div class="unter">von ' + euro(z.einnahmen) + ' Einnahmen</div>';
+  html += '</div>';
+  if (z.laeuftNoch) {
+    html += '<p class="abs-fuss">Dieses Blatt läuft noch — alle Zahlen sind Zwischenstand.</p>';
+  }
+
+  /* Abschlussrechnung */
+  html += '<div class="buchtitel">Abschlussrechnung</div>';
+  html += '<div class="abs-zeile"><span class="l">Einnahmen</span><span class="r haben">' + euro(z.einnahmen) + '</span></div>';
+  html += '<div class="abs-zeile"><span class="l">Feste Ausgaben <i>· Girokonto</i></span><span class="r">' + euro(z.fest) + '</span></div>';
+  html += '<div class="abs-zeile"><span class="l">Veränderliche Ausgaben <i>· Haushalt</i></span><span class="r'
+       + (z.sollVariabel > 0 && z.variabel > z.sollVariabel ? ' soll' : '') + '">' + euro(z.variabel) + '</span></div>';
+  html += '<div class="abschluss"><span>Verblieben</span><span class="betrag">' + euro(z.verblieben) + '</span></div>';
+
+  const vergleiche = [];
+  if (z.frueher.length) {
+    const vor = z.frueher[z.frueher.length - 1];
+    vergleiche.push('Vorblatt ' + blattName(vor) + ': ' + euro(verbliebenFrueher(vor)) + ' verblieben.');
+    if (z.frueher.length > 1) {
+      const schnitt = z.frueher.reduce((s, b) => s + verbliebenFrueher(b), 0) / z.frueher.length;
+      vergleiche.push('Schnitt der letzten ' + z.frueher.length + ' Blätter: ' + euro(schnitt) + '.');
+    }
+  }
+  if (z.sollVariabel > 0) {
+    const d = z.variabel - z.sollVariabel;
+    vergleiche.push(d > 0
+      ? 'Die veränderlichen Ausgaben übersteigen ihr Soll von ' + euro(z.sollVariabel) + ' um <b>' + euro(d) + '</b>.'
+      : 'Die veränderlichen Ausgaben bleiben <b>' + euro(-d) + '</b> unter ihrem Soll von ' + euro(z.sollVariabel) + '.');
+  }
+  if (vergleiche.length) html += '<p class="abs-fuss">' + vergleiche.join(' ') + '</p>';
+
+  /* Prüfvermerke */
+  const befunde = abschlussBefunde(z);
+  html += '<div class="buchtitel" style="margin-top:22px">Prüfvermerke</div>';
+  if (!befunde.length) {
+    html += '<p class="vermerk">Nichts fällt auf. Alle Posten liegen in ihrem Soll und im gewohnten Rahmen.</p>';
+  } else {
+    for (const b of befunde.slice(0, 8)) {
+      html += '<div class="befund"><p class="kern">' + b.kern + '</p>';
+      if (b.grund) html += '<p class="grund">' + escapeHtml(b.grund) + '</p>';
+      if (b.rat) html += '<p class="rat">' + escapeHtml(b.rat) + '</p>';
+      html += '</div>';
+    }
+    if (befunde.length > 8) {
+      html += '<p class="abs-fuss">' + (befunde.length - 8) + ' weitere Vermerke sind hier nicht aufgeführt; '
+           + 'die Tabelle darunter zeigt alle Posten.</p>';
+    }
+  }
+
+  /* Posten gegen Soll */
+  html += '<div class="buchtitel" style="margin-top:22px">Posten gegen Soll</div>';
+  html += '<div class="spaltenkopf vier"><span>Posten</span><span>Soll</span><span>Ist</span><span>Abweichung</span></div>';
+  const nachAbweichung = z.zeilen.slice().sort((a, b) => b.abweichung - a.abweichung);
+  for (const p of nachAbweichung) {
+    const ueber = p.soll > 0 && p.ist > p.soll;
+    const unter = p.soll > 0 && p.ist < p.soll;
+    const breite = p.soll > 0 ? Math.min(100, (p.ist / p.soll) * 100) : (p.ist > 0 ? 100 : 0);
+    html += '<div class="abs-posten' + (ueber ? ' ueber' : (unter ? ' unter' : '')) + '">';
+    html += '<span class="name">' + escapeHtml(p.name) + '</span>';
+    html += '<span class="z soll">' + (p.soll > 0 ? euroOhneZeichen(p.soll) : '—') + '</span>';
+    html += '<span class="z ist">' + euroOhneZeichen(p.ist) + '</span>';
+    html += '<span class="z abw">' + (p.soll > 0
+      ? (p.abweichung >= 0 ? '+' : '−') + euroOhneZeichen(Math.abs(p.abweichung)) : '—') + '</span>';
+    html += '<div class="tintenlinie"><i style="--w:' + breite.toFixed(1) + '%"></i></div>';
+    html += '</div>';
+  }
+  html += '<div class="abschluss"><span>Ausgaben zusammen</span><span class="betrag">' + euro(z.fest + z.variabel) + '</span></div>';
+
+  /* Wofür */
+  if (z.empfaenger.length) {
+    html += '<div class="buchtitel" style="margin-top:22px">Wofür — die Empfänger</div>';
+    html += '<div class="abs-liste">';
+    const oben = z.empfaenger.slice(0, 8);
+    for (const e of oben) {
+      const namen = Array.from(e.posten).map(id => postenName(id)).filter(Boolean).join(', ');
+      html += '<div class="zeile"><span class="n">' + escapeHtml(e.name)
+           + (namen ? '<i>' + escapeHtml(namen) + '</i>' : '') + '</span>'
+           + '<span class="anz">' + e.anzahl + ' ×</span>'
+           + '<span class="b">' + euro(e.summe) + '</span></div>';
+    }
+    html += '</div>';
+    const summeOben = oben.reduce((s, e) => s + e.summe, 0);
+    const summeAlle = z.empfaenger.reduce((s, e) => s + e.summe, 0);
+    if (summeAlle > 0) {
+      html += '<p class="abs-fuss">Die ' + oben.length + ' größten von ' + z.empfaenger.length
+           + ' Empfängern; sie tragen <b>' + Math.round(summeOben / summeAlle * 100) + ' %</b> der '
+           + 'veränderlichen Ausgaben. Feste Kosten bleiben hier außen vor.</p>';
+    }
+  }
+
+  /* Größte Einzelausgaben */
+  if (z.groesste.length) {
+    html += '<div class="buchtitel" style="margin-top:22px">Größte Einzelausgaben</div>';
+    html += '<div class="abs-liste">';
+    for (const e of z.groesste) {
+      const p = postenName(e.kategorieId);
+      html += '<div class="zeile"><span class="n">' + escapeHtml(eintragEmpfaenger(e))
+           + '<i>' + escapeHtml((p || '') + ' · ' + datumKurz(e.datum)) + '</i></span>'
+           + '<span class="anz"></span><span class="b">' + euro(Math.abs(e.betrag)) + '</span></div>';
+    }
+    html += '</div>';
+  }
+
+  /* Sparpotenzial */
+  const sp = sparpotenzial(z);
+  if (sp.gesamt > 0 || sp.hebel.length) {
+    html += '<div class="buchtitel" style="margin-top:22px">Sparpotenzial</div>';
+    if (sp.gesamt > 0) {
+      html += '<div class="abs-zeile"><span class="l">Hätten alle Posten ihr Soll gehalten, wäre zusätzlich verblieben</span>'
+           + '<span class="r haben">' + euro(sp.gesamt) + '</span></div>';
+    }
+    for (const h of sp.hebel.slice(0, 6)) {
+      html += '<div class="abs-zeile"><span class="l">' + escapeHtml(h.name)
+           + ' <i>· ' + escapeHtml(h.wie) + '</i></span>'
+           + '<span class="r haben">' + euro(h.betrag) + '</span></div>';
+    }
+    html += '<p class="abs-fuss">Rechenwerk aus diesem Blatt und den ' + z.frueher.length
+         + ' davor — keine Zusage, sondern ein Maßstab zum Nachdenken. '
+         + 'Wo sich sparen lässt, weißt Du besser als das Buch.</p>';
+  }
+
+  /* Beweggründe — beschreibend, ohne Deutung */
+  const r = rueckschauZahlen(bl);
+  if (r.mitVermerk > 0) {
+    html += '<div class="buchtitel" style="margin-top:22px">Beweggründe</div>';
+    html += '<div class="abs-liste">';
+    html += '<div class="zeile"><span class="n">Geplant</span><span class="anz">' + r.geplantAnzahl
+         + ' ×</span><span class="b">' + euro(r.geplantSumme) + '</span></div>';
+    html += '<div class="zeile"><span class="n">Ungeplant</span><span class="anz">' + r.ungeplantAnzahl
+         + ' ×</span><span class="b">' + euro(r.ungeplantSumme) + '</span></div>';
+    const gruende = Object.keys(r.jeGrund)
+      .map(id => ({ name: (beweggrund(id) || {}).name || 'Unbekannt', anzahl: r.jeGrund[id].anzahl, summe: r.jeGrund[id].summe }))
+      .sort((a, b) => b.anzahl - a.anzahl || b.summe - a.summe).slice(0, 3);
+    for (const g of gruende) {
+      html += '<div class="zeile"><span class="n">' + escapeHtml(g.name) + '</span><span class="anz">'
+           + g.anzahl + ' ×</span><span class="b">' + euro(g.summe) + '</span></div>';
+    }
+    html += '</div>';
+    html += '<p class="abs-fuss">Von ' + r.gesamt + ' ' + (r.gesamt === 1 ? 'Eintrag trägt' : 'Einträgen tragen')
+         + ' ' + r.mitVermerk + ' einen Vermerk; die Angaben beziehen sich auf diese. '
+         + 'Beweggründe werden verzeichnet, nicht gedeutet.</p>';
+  }
+
+  html += '<div class="knopfzeile">';
+  html += '<button type="button" class="leise" onclick="oeffneVerwaltung()">Zurück</button>';
+  html += '<button type="button" class="leise" onclick="waehleRueckschauBlatt(\'' + bl + '\')">Rückschau</button>';
+  html += '</div>';
+  oeffneZettel(html);
+}
+
+function waehleAbschlussBlatt(blatt) {
+  abschlussBlatt = blatt;
+  oeffneAbschluss();
+}
+
 /* ── Verwaltung (Sammelzugang) ── */
 
 function oeffneVerwaltung() {
   let html = '<div class="zettel-titel">Verwaltung</div>';
   const punkte = [
     ['Posten anlegen', 'oeffnePostenNeu()'],
+    ['Abschluss des Blattes', 'oeffneAbschluss()'],
     ['Rückschau', 'oeffneRueckschau()'],
     ['Haushaltskonto planen', 'oeffnePlanung()'],
     ['Vormerkbuch', 'oeffneVormerkbuch()'],
