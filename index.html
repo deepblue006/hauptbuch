@@ -1032,7 +1032,7 @@
 
 const SPEICHER_SCHLUESSEL = 'fc_data_v1';
 const SCHEMA_VERSION = 2;
-const FASSUNG = '1.5';
+const FASSUNG = '1.5.1';
 const EINNAHME_ID = 'k_einnahme'; // Sammelposten für Gutschriften ohne eigene Zuordnung
 const ABHEBUNG_ID = 'k_bargeldabhebung'; // Pseudo-Posten: erhöht die Kasse, nie budgetwirksam
 
@@ -1124,6 +1124,12 @@ function migriere(d) {
   }
   if (typeof d.settings.gehaltPostenId === 'undefined') d.settings.gehaltPostenId = null;
   d.kategorien = (d.kategorien || []).map(k => Object.assign({ archiviert: false, reihenfolge: 0 }, k));
+  // Additiv seit v1.5.1: Art des Postens (fest oder veränderlich). Bislang wurde
+  // dafür die Kontozuordnung herangezogen — die trifft es nicht, weil feste
+  // Kosten auch über das Haushaltskonto laufen können. Vorgabe aus dem Konto.
+  for (const k of d.kategorien) {
+    if (typeof k.fest !== 'boolean') k.fest = (k.konto === 'giro');
+  }
   d.buchungen = d.buchungen || [];
   d.regeln = (d.regeln || []).map(normalisiereRegel);
   d.bargeld = d.bargeld || basis.bargeld;
@@ -1377,6 +1383,13 @@ function kassenBestand() {  let bestand = 0;
     bestand += c.betrag;
   }
   return Math.round(bestand * 100) / 100;
+}
+
+function istFesterPosten(k) {
+  // Feste Kosten bleiben im Abschluss außen vor: Miete und Versicherung stünden
+  // sonst in jedem Blatt oben und sind doch kein Sparhebel.
+  if (!k) return false;
+  return typeof k.fest === 'boolean' ? k.fest : (k.konto === 'giro');
 }
 
 function istAusgabePosten(k) {
@@ -1790,6 +1803,7 @@ function legePostenAn() {
     name: name,
     typ: 'ausgabe',
     konto: 'haushalt',
+    fest: false,
     monatsbudget: soll,
     reihenfolge: maxReihe + 1,
     archiviert: false
@@ -1826,6 +1840,13 @@ function oeffnePostenDetail(kategorieId) {
   html += '<button type="button" id="pd-haushalt" class="' + (pKonto === 'haushalt' ? 'gewaehlt' : '') + '" onclick="waehlePostenKonto(\'haushalt\')">Haushaltskonto</button>';
   html += '<button type="button" id="pd-giro" class="' + (pKonto === 'giro' ? 'gewaehlt' : '') + '" onclick="waehlePostenKonto(\'giro\')">Girokonto</button>';
   html += '</div></div>';
+  const pFest = istFesterPosten(p);
+  postenEditorFest = pFest;
+  html += '<div class="feldgruppe"><label>Art</label><div class="wahl2">';
+  html += '<button type="button" id="pd-veraenderlich" class="' + (pFest ? '' : 'gewaehlt') + '" onclick="waehlePostenArt(false)">veränderlich</button>';
+  html += '<button type="button" id="pd-fest" class="' + (pFest ? 'gewaehlt' : '') + '" onclick="waehlePostenArt(true)">fest</button>';
+  html += '</div>';
+  html += '<p class="hinweistext">Feste Posten bleiben im Abschluss des Blattes außen vor — sie erscheinen dort als eine Zeile, aber nicht in Prüfvermerken, Empfängern oder Sparpotenzial.</p></div>';
   html += '<div class="knopfzeile" style="margin-top:4px;margin-bottom:8px">';
   if (p.archiviert) {
     html += '<button type="button" class="leise" onclick="archivierePosten(\'' + p.id + '\', false)">Wieder aufnehmen</button>';
@@ -2011,6 +2032,17 @@ function entferneVermerk(eintragId, kategorieId, istBar) {
 
 let postenEditorKonto = 'haushalt';
 
+let postenEditorFest = false;
+
+function waehlePostenArt(fest) {
+  postenEditorFest = !!fest;
+  const v = document.getElementById('pd-veraenderlich'), f = document.getElementById('pd-fest');
+  if (v && f) {
+    v.classList.toggle('gewaehlt', !postenEditorFest);
+    f.classList.toggle('gewaehlt', postenEditorFest);
+  }
+}
+
 function waehlePostenKonto(konto) {
   postenEditorKonto = konto;
   const h = document.getElementById('pd-haushalt'), g = document.getElementById('pd-giro');
@@ -2030,6 +2062,7 @@ function speicherePosten(kategorieId) {
   p.name = name;
   p.monatsbudget = soll;
   p.konto = postenEditorKonto;
+  p.fest = postenEditorFest;
   speichere();
   schliesseZettel();
   render();
@@ -4033,7 +4066,8 @@ function mittel(reihe, feld) {
 
 function abschlussZahlen(blatt) {
   const frueher = frueherBlaetter(blatt, ABSCHLUSS.vergleichsBlaetter);
-  const zeilen = [];
+  const zeilen = [];        // nur veränderliche Posten — Grundlage aller Befunde
+  const festeZeilen = [];   // feste Posten: nur als Zeile in der Abschlussrechnung
   let fest = 0, variabel = 0, sollVariabel = 0, sollFest = 0;
 
   for (const p of sichtbarePosten(blatt)) {
@@ -4081,7 +4115,7 @@ function abschlussZahlen(blatt) {
     }
 
     const zeile = {
-      id: p.id, name: p.name, konto: p.konto, archiviert: !!p.archiviert,
+      id: p.id, name: p.name, konto: p.konto, fest: istFesterPosten(p), archiviert: !!p.archiviert,
       soll: soll, ist: jetzt.summe, anzahl: jetzt.anzahl, schnitt: jetzt.schnitt,
       abweichung: jetzt.summe - soll,
       summeFrueher: summeFrueher, anzahlFrueher: anzahlFrueher, einzelFrueher: einzelFrueher,
@@ -4089,9 +4123,15 @@ function abschlussZahlen(blatt) {
       folgeUeber: folgeUeber, folgeUnter: folgeUnter,
       klumpen: klumpen, eintraege: sortiert
     };
-    zeilen.push(zeile);
-    if (p.konto === 'giro') { fest += jetzt.summe; sollFest += soll; }
-    else { variabel += jetzt.summe; sollVariabel += soll; }
+    if (istFesterPosten(p)) {
+      festeZeilen.push(zeile);
+      fest += jetzt.summe;
+      sollFest += soll;
+    } else {
+      zeilen.push(zeile);
+      variabel += jetzt.summe;
+      sollVariabel += soll;
+    }
   }
 
   const einnahmen = einnahmenImBlatt(blatt).reduce((s, b) => s + b.betrag, 0);
@@ -4100,7 +4140,7 @@ function abschlussZahlen(blatt) {
   // jeden Monat oben und wären doch kein Hebel.
   const auszug = blattAuszug(blatt);
   const veraenderlich = new Set(daten.kategorien
-    .filter(k => istAusgabePosten(k) && k.konto !== 'giro').map(k => k.id));
+    .filter(k => istAusgabePosten(k) && !istFesterPosten(k)).map(k => k.id));
   const variableEintraege = auszug.eintraege.filter(e => veraenderlich.has(e.kategorieId));
   const jeEmpfaenger = new Map();
   for (const e of variableEintraege) {
@@ -4141,6 +4181,7 @@ function abschlussZahlen(blatt) {
     laeuftNoch: blatt === aktuellesBlatt(),
     frueher: frueher,
     zeilen: zeilen,
+    festeZeilen: festeZeilen,
     einnahmen: einnahmen,
     fest: fest, variabel: variabel,
     sollFest: sollFest, sollVariabel: sollVariabel,
@@ -4358,7 +4399,10 @@ function oeffneAbschluss(blatt) {
   /* Abschlussrechnung */
   html += '<div class="buchtitel">Abschlussrechnung</div>';
   html += '<div class="abs-zeile"><span class="l">Einnahmen</span><span class="r haben">' + euro(z.einnahmen) + '</span></div>';
-  html += '<div class="abs-zeile"><span class="l">Feste Ausgaben <i>· Girokonto</i></span><span class="r">' + euro(z.fest) + '</span></div>';
+  html += '<div class="abs-zeile"><span class="l">Feste Ausgaben'
+       + (z.festeZeilen.length ? ' <i>· ' + z.festeZeilen.length
+          + (z.festeZeilen.length === 1 ? ' Posten' : ' Posten') + '</i>' : '')
+       + '</span><span class="r">' + euro(z.fest) + '</span></div>';
   html += '<div class="abs-zeile"><span class="l">Veränderliche Ausgaben <i>· Haushalt</i></span><span class="r'
        + (z.sollVariabel > 0 && z.variabel > z.sollVariabel ? ' soll' : '') + '">' + euro(z.variabel) + '</span></div>';
   html += '<div class="abschluss"><span>Verblieben</span><span class="betrag">' + euro(z.verblieben) + '</span></div>';
@@ -4383,7 +4427,10 @@ function oeffneAbschluss(blatt) {
   /* Prüfvermerke */
   const befunde = abschlussBefunde(z);
   html += '<div class="buchtitel" style="margin-top:22px">Prüfvermerke</div>';
-  if (!befunde.length) {
+  if (!z.zeilen.length) {
+    html += '<p class="vermerk">Alle Posten sind als fest gekennzeichnet. Ohne veränderliche Posten '
+         + 'gibt es nichts abzuwägen.</p>';
+  } else if (!befunde.length) {
     html += '<p class="vermerk">Nichts fällt auf. Alle Posten liegen in ihrem Soll und im gewohnten Rahmen.</p>';
   } else {
     for (const b of befunde.slice(0, 8)) {
@@ -4398,8 +4445,23 @@ function oeffneAbschluss(blatt) {
     }
   }
 
-  /* Posten gegen Soll */
-  html += '<div class="buchtitel" style="margin-top:22px">Posten gegen Soll</div>';
+  /* Feste Ausgaben — vollständig, aber ohne Bewertung */
+  if (z.festeZeilen.length) {
+    html += '<div class="buchtitel" style="margin-top:22px">Feste Ausgaben</div>';
+    html += '<div class="abs-liste">';
+    for (const p of z.festeZeilen.slice().sort((a, b) => b.ist - a.ist)) {
+      html += '<div class="zeile"><span class="n">' + escapeHtml(p.name)
+           + (p.soll > 0 ? '<i>Soll ' + euro(p.soll) + '</i>' : '') + '</span>'
+           + '<span class="anz"></span><span class="b">' + euro(p.ist) + '</span></div>';
+    }
+    html += '</div>';
+    html += '<p class="abs-fuss">Feste Kosten werden nur verzeichnet, nicht bewertet — sie sind kein Sparhebel '
+         + 'und blieben deshalb aus Prüfvermerken, Empfängern und Sparpotenzial heraus. '
+         + 'Die Art eines Postens lässt sich im Posten-Detail umstellen.</p>';
+  }
+
+  /* Posten gegen Soll — veränderliche Posten */
+  html += '<div class="buchtitel" style="margin-top:22px">Veränderliche Posten gegen Soll</div>';
   html += '<div class="spaltenkopf vier"><span>Posten</span><span>Soll</span><span>Ist</span><span>Abweichung</span></div>';
   const nachAbweichung = z.zeilen.slice().sort((a, b) => b.abweichung - a.abweichung);
   for (const p of nachAbweichung) {
@@ -4415,7 +4477,7 @@ function oeffneAbschluss(blatt) {
     html += '<div class="tintenlinie"><i style="--w:' + breite.toFixed(1) + '%"></i></div>';
     html += '</div>';
   }
-  html += '<div class="abschluss"><span>Ausgaben zusammen</span><span class="betrag">' + euro(z.fest + z.variabel) + '</span></div>';
+  html += '<div class="abschluss"><span>Veränderliche Ausgaben</span><span class="betrag">' + euro(z.variabel) + '</span></div>';
 
   /* Wofür */
   if (z.empfaenger.length) {
