@@ -1032,7 +1032,7 @@
 
 const SPEICHER_SCHLUESSEL = 'fc_data_v1';
 const SCHEMA_VERSION = 2;
-const FASSUNG = '1.5.1';
+const FASSUNG = '1.6';
 const EINNAHME_ID = 'k_einnahme'; // Sammelposten für Gutschriften ohne eigene Zuordnung
 const ABHEBUNG_ID = 'k_bargeldabhebung'; // Pseudo-Posten: erhöht die Kasse, nie budgetwirksam
 
@@ -3753,89 +3753,12 @@ function prozentText(anteil) {
 
 let rueckschauBlatt = null; // null = alle Blätter
 
-function oeffneRueckschau() {
-  const blatt = rueckschauBlatt;
-  const z = rueckschauZahlen(blatt);
-  const zeitraum = blatt ? 'Blatt ' + blattName(blatt) : 'alle Blätter';
-
-  let html = '<div class="zettel-titel">Rückschau</div>';
-
-  /* Zeitraumwahl */
-  html += '<div class="streifen-reihe" style="margin-bottom:12px">';
-  html += '<button type="button" class="stempel' + (blatt === null ? ' gewaehlt' : '') + '" onclick="waehleRueckschauBlatt(null)">alle Blätter</button>';
-  for (const bl of alleBlaetter().slice(0, 12)) {
-    html += '<button type="button" class="stempel' + (blatt === bl ? ' gewaehlt' : '') + '" onclick="waehleRueckschauBlatt(\'' + bl + '\')">' + escapeHtml(blattName(bl)) + '</button>';
-  }
-  html += '</div>';
-
-  if (z.gesamt === 0) {
-    html += '<p class="vermerk">Für ' + escapeHtml(zeitraum) + ' ist kein Eintrag verzeichnet.</p>';
-    html += '<div class="knopfzeile"><button type="button" class="leise" onclick="oeffneVerwaltung()">Zurück</button></div>';
-    oeffneZettel(html);
-    return;
-  }
-
-  /* Abdeckung — steht immer zuerst (F10.3) */
-  html += '<div class="buchtitel">Abdeckung</div>';
-  html += '<p class="rueck-satz">Von <b>' + z.gesamt + '</b> ' + (z.gesamt === 1 ? 'Eintrag trägt' : 'Einträgen tragen') + ' <b>'
-       + z.mitVermerk + '</b> einen Vermerk.</p>';
-  html += anteilsLinie(z.abdeckung);
-  html += '<p class="rueck-fuss">' + prozentText(z.abdeckung) + ' — alle folgenden Angaben beziehen sich auf diese ' + z.mitVermerk + ' Einträge.</p>';
-
-  if (z.mitVermerk === 0) {
-    html += '<p class="vermerk">Ohne Vermerke lässt sich nichts gegenüberstellen.</p>';
-    html += '<div class="knopfzeile"><button type="button" class="leise" onclick="oeffneVerwaltung()">Zurück</button></div>';
-    oeffneZettel(html);
-    return;
-  }
-
-  /* Geplant / Ungeplant */
-  html += '<div class="buchtitel" style="margin-top:20px">Geplant und ungeplant</div>';
-  html += '<div class="spaltenkopf"><span>Kennzeichen</span><span>Anzahl</span><span>Summe</span></div>';
-  const anteilGeplant = z.mitVermerk > 0 ? z.geplantAnzahl / z.mitVermerk : 0;
-  html += '<div class="rueck-zeile"><span class="r-name">geplant</span>'
-       + '<span class="r-anzahl">' + z.geplantAnzahl + '</span>'
-       + '<span class="r-summe">' + euroOhneZeichen(z.geplantSumme) + '</span>'
-       + anteilsLinie(anteilGeplant)
-       + '<span class="r-rest">' + prozentText(anteilGeplant) + ' der vermerkten Einträge</span></div>';
-  const anteilUngeplant = z.mitVermerk > 0 ? z.ungeplantAnzahl / z.mitVermerk : 0;
-  html += '<div class="rueck-zeile"><span class="r-name">ungeplant</span>'
-       + '<span class="r-anzahl">' + z.ungeplantAnzahl + '</span>'
-       + '<span class="r-summe">' + euroOhneZeichen(z.ungeplantSumme) + '</span>'
-       + anteilsLinie(anteilUngeplant)
-       + '<span class="r-rest">' + prozentText(anteilUngeplant) + ' der vermerkten Einträge</span></div>';
-
-  /* Je Beweggrund */
-  html += '<div class="buchtitel" style="margin-top:20px">Nach Beweggrund</div>';
-  html += '<div class="spaltenkopf"><span>Beweggrund</span><span>Anzahl</span><span>Summe</span></div>';
-  const gruende = Object.keys(z.jeGrund)
-    .map(id => ({ id: id, name: (beweggrund(id) || {}).name || 'Unbekannt',
-                  anzahl: z.jeGrund[id].anzahl, summe: z.jeGrund[id].summe }))
-    .sort((a, b) => b.anzahl - a.anzahl || b.summe - a.summe);
-  for (const g of gruende) {
-    const anteil = g.anzahl / z.mitVermerk;
-    html += '<div class="rueck-zeile"><span class="r-name">' + escapeHtml(g.name) + '</span>'
-         + '<span class="r-anzahl">' + g.anzahl + '</span>'
-         + '<span class="r-summe">' + euroOhneZeichen(g.summe) + '</span>'
-         + anteilsLinie(anteil)
-         + '<span class="r-rest">' + prozentText(anteil) + '</span></div>';
-  }
-  html += '<div class="abschluss"><span>Summe der vermerkten Einträge</span><span class="betrag">' + euro(z.summeMitVermerk) + '</span></div>';
-
-  html += '<div class="knopfzeile">';
-  html += '<button type="button" class="leise" onclick="oeffneVerwaltung()">Zurück</button>';
-  html += '<button type="button" class="leise" onclick="oeffneKreuzbetrachtung()">Beweggrund × Posten</button>';
-  html += '</div>';
-  if (alleBlaetter().length > 1) {
-    html += '<div class="korb-fuss"><button type="button" onclick="oeffneVerlaufUeberBlaetter()">Entwicklung über die Blätter</button></div>';
-  }
-  oeffneZettel(html);
-}
-
-function waehleRueckschauBlatt(blatt) {
-  rueckschauBlatt = blatt;
-  oeffneRueckschau();
-}
+/* Die eigenständige Rückschau-Ansicht ist mit v1.6 in den Abschluss des Blattes
+   eingegliedert (ein Menüpunkt statt zwei). Ihr Zahlenwerk lebt unverändert in
+   rueckschauZahlen() weiter, ihre Darstellung im Beweggrund-Abschnitt des
+   Abschlusses, ihre beiden Unteransichten unten. Es ging nichts verloren.
+   `rueckschauBlatt` bleibt der Zeitraum, den die Unteransichten auswerten;
+   der Abschluss setzt ihn beim Zeichnen.                                    */
 
 function oeffneKreuzbetrachtung() {
   const blatt = rueckschauBlatt;
@@ -3881,7 +3804,7 @@ function oeffneKreuzbetrachtung() {
     }
   }
 
-  html += '<div class="knopfzeile"><button type="button" class="leise" onclick="oeffneRueckschau()">Zurück</button></div>';
+  html += '<div class="knopfzeile"><button type="button" class="leise" onclick="oeffneAbschluss()">Zurück</button></div>';
   oeffneZettel(html);
 }
 
@@ -3907,7 +3830,7 @@ function oeffneVerlaufUeberBlaetter() {
     html += '</div>';
   }
 
-  html += '<div class="knopfzeile"><button type="button" class="leise" onclick="oeffneRueckschau()">Zurück</button></div>';
+  html += '<div class="knopfzeile"><button type="button" class="leise" onclick="oeffneAbschluss()">Zurück</button></div>';
   oeffneZettel(html);
 }
 
@@ -4362,6 +4285,12 @@ function sparpotenzial(z) {
 /* ── Ansicht ────────────────────────────────────────────── */
 
 let abschlussBlatt = null;
+let beweggrundBereich = 'blatt';   // 'blatt' | 'alle' — Umfang des Beweggrund-Abschnitts
+
+function waehleBeweggrundBereich(bereich) {
+  beweggrundBereich = bereich;
+  oeffneAbschluss();
+}
 
 function oeffneAbschluss(blatt) {
   abschlussPufferLeeren();
@@ -4532,31 +4461,74 @@ function oeffneAbschluss(blatt) {
          + 'Wo sich sparen lässt, weißt Du besser als das Buch.</p>';
   }
 
-  /* Beweggründe — beschreibend, ohne Deutung */
-  const r = rueckschauZahlen(bl);
-  if (r.mitVermerk > 0) {
-    html += '<div class="buchtitel" style="margin-top:22px">Beweggründe</div>';
-    html += '<div class="abs-liste">';
-    html += '<div class="zeile"><span class="n">Geplant</span><span class="anz">' + r.geplantAnzahl
-         + ' ×</span><span class="b">' + euro(r.geplantSumme) + '</span></div>';
-    html += '<div class="zeile"><span class="n">Ungeplant</span><span class="anz">' + r.ungeplantAnzahl
-         + ' ×</span><span class="b">' + euro(r.ungeplantSumme) + '</span></div>';
-    const gruende = Object.keys(r.jeGrund)
-      .map(id => ({ name: (beweggrund(id) || {}).name || 'Unbekannt', anzahl: r.jeGrund[id].anzahl, summe: r.jeGrund[id].summe }))
-      .sort((a, b) => b.anzahl - a.anzahl || b.summe - a.summe).slice(0, 3);
-    for (const g of gruende) {
-      html += '<div class="zeile"><span class="n">' + escapeHtml(g.name) + '</span><span class="anz">'
-           + g.anzahl + ' ×</span><span class="b">' + euro(g.summe) + '</span></div>';
+  /* Beweggründe — die frühere Rückschau, seit v1.6 hier eingegliedert.
+     Weiterhin beschreibend: F10.4 gilt unverändert, gedeutet wird nichts. */
+  const r = rueckschauZahlen(beweggrundBereich === 'alle' ? null : bl);
+  rueckschauBlatt = (beweggrundBereich === 'alle' ? null : bl);
+  html += '<div class="buchtitel" style="margin-top:22px">Beweggründe</div>';
+  html += '<div class="streifen-reihe" style="margin-bottom:10px">';
+  html += '<button type="button" class="stempel' + (beweggrundBereich === 'blatt' ? ' gewaehlt' : '')
+       + '" onclick="waehleBeweggrundBereich(\'blatt\')">dieses Blatt</button>';
+  html += '<button type="button" class="stempel' + (beweggrundBereich === 'alle' ? ' gewaehlt' : '')
+       + '" onclick="waehleBeweggrundBereich(\'alle\')">alle Blätter</button>';
+  html += '</div>';
+
+  if (r.gesamt === 0) {
+    html += '<p class="vermerk">Kein Eintrag verzeichnet.</p>';
+  } else {
+    /* Abdeckung steht immer zuerst (F10.3) */
+    html += '<p class="rueck-satz">Von <b>' + r.gesamt + '</b> '
+         + (r.gesamt === 1 ? 'Eintrag trägt' : 'Einträgen tragen') + ' <b>' + r.mitVermerk
+         + '</b> einen Vermerk.</p>';
+    html += anteilsLinie(r.abdeckung);
+    html += '<p class="rueck-fuss">' + prozentText(r.abdeckung)
+         + ' — alle folgenden Angaben beziehen sich auf diese ' + r.mitVermerk + ' Einträge.</p>';
+
+    if (r.mitVermerk === 0) {
+      html += '<p class="vermerk">Ohne Vermerke lässt sich nichts gegenüberstellen.</p>';
+    } else {
+      html += '<div class="buchtitel" style="margin-top:18px">Geplant und ungeplant</div>';
+      html += '<div class="spaltenkopf"><span>Kennzeichen</span><span>Anzahl</span><span>Summe</span></div>';
+      const aG = r.geplantAnzahl / r.mitVermerk;
+      html += '<div class="rueck-zeile"><span class="r-name">geplant</span>'
+           + '<span class="r-anzahl">' + r.geplantAnzahl + '</span>'
+           + '<span class="r-summe">' + euroOhneZeichen(r.geplantSumme) + '</span>'
+           + anteilsLinie(aG)
+           + '<span class="r-rest">' + prozentText(aG) + ' der vermerkten Einträge</span></div>';
+      const aU = r.ungeplantAnzahl / r.mitVermerk;
+      html += '<div class="rueck-zeile"><span class="r-name">ungeplant</span>'
+           + '<span class="r-anzahl">' + r.ungeplantAnzahl + '</span>'
+           + '<span class="r-summe">' + euroOhneZeichen(r.ungeplantSumme) + '</span>'
+           + anteilsLinie(aU)
+           + '<span class="r-rest">' + prozentText(aU) + ' der vermerkten Einträge</span></div>';
+
+      html += '<div class="buchtitel" style="margin-top:18px">Nach Beweggrund</div>';
+      html += '<div class="spaltenkopf"><span>Beweggrund</span><span>Anzahl</span><span>Summe</span></div>';
+      const gruende = Object.keys(r.jeGrund)
+        .map(id => ({ name: (beweggrund(id) || {}).name || 'Unbekannt',
+                      anzahl: r.jeGrund[id].anzahl, summe: r.jeGrund[id].summe }))
+        .sort((a, b) => b.anzahl - a.anzahl || b.summe - a.summe);
+      for (const g of gruende) {
+        const anteil = g.anzahl / r.mitVermerk;
+        html += '<div class="rueck-zeile"><span class="r-name">' + escapeHtml(g.name) + '</span>'
+             + '<span class="r-anzahl">' + g.anzahl + '</span>'
+             + '<span class="r-summe">' + euroOhneZeichen(g.summe) + '</span>'
+             + anteilsLinie(anteil)
+             + '<span class="r-rest">' + prozentText(anteil) + '</span></div>';
+      }
+      html += '<div class="abschluss"><span>Summe der vermerkten Einträge</span><span class="betrag">'
+           + euro(r.summeMitVermerk) + '</span></div>';
+      html += '<p class="abs-fuss">Beweggründe werden verzeichnet, nicht gedeutet. '
+           + 'Anders als das Zahlenwerk darüber wird dieser Abschnitt nie bewertet.</p>';
+      html += '<div class="korb-fuss"><button type="button" onclick="oeffneKreuzbetrachtung()">Beweggrund × Posten</button></div>';
+      if (alleBlaetter().length > 1) {
+        html += '<div class="korb-fuss"><button type="button" onclick="oeffneVerlaufUeberBlaetter()">Entwicklung über die Blätter</button></div>';
+      }
     }
-    html += '</div>';
-    html += '<p class="abs-fuss">Von ' + r.gesamt + ' ' + (r.gesamt === 1 ? 'Eintrag trägt' : 'Einträgen tragen')
-         + ' ' + r.mitVermerk + ' einen Vermerk; die Angaben beziehen sich auf diese. '
-         + 'Beweggründe werden verzeichnet, nicht gedeutet.</p>';
   }
 
   html += '<div class="knopfzeile">';
   html += '<button type="button" class="leise" onclick="oeffneVerwaltung()">Zurück</button>';
-  html += '<button type="button" class="leise" onclick="waehleRueckschauBlatt(\'' + bl + '\')">Rückschau</button>';
   html += '</div>';
   oeffneZettel(html);
 }
@@ -4573,7 +4545,6 @@ function oeffneVerwaltung() {
   const punkte = [
     ['Posten anlegen', 'oeffnePostenNeu()'],
     ['Abschluss des Blattes', 'oeffneAbschluss()'],
-    ['Rückschau', 'oeffneRueckschau()'],
     ['Haushaltskonto planen', 'oeffnePlanung()'],
     ['Vormerkbuch', 'oeffneVormerkbuch()'],
     ['Schulden', 'oeffneSchulden()'],
