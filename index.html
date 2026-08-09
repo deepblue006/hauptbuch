@@ -1032,7 +1032,7 @@
 
 const SPEICHER_SCHLUESSEL = 'fc_data_v1';
 const SCHEMA_VERSION = 2;
-const FASSUNG = '1.6';
+const FASSUNG = '1.7';
 const EINNAHME_ID = 'k_einnahme'; // Sammelposten für Gutschriften ohne eigene Zuordnung
 const ABHEBUNG_ID = 'k_bargeldabhebung'; // Pseudo-Posten: erhöht die Kasse, nie budgetwirksam
 
@@ -1643,6 +1643,8 @@ function oeffneEintrag() {
     html += '<p class="hinweistext" style="margin:6px 0 0">In der Kasse: <b>' + euro(kassenBestand()) + '</b></p>';
   }
   html += '</div>';
+  html += '<div class="feldgruppe"><label for="eintrag-notiz">Anmerkung — freiwillig</label>';
+  html += '<input class="feld" id="eintrag-notiz" type="text" autocomplete="off" placeholder="wofür war das?"></div>';
   html += '<div class="feldgruppe" style="margin-bottom:6px"><label>Posten wählen — verbucht sofort</label></div>';
   html += '<div class="postenwahl">';
   for (const p of posten) {
@@ -1737,6 +1739,8 @@ function verbuche(kategorieId) {
     return;
   }
   const kat = daten.kategorien.find(k => k.id === kategorieId);
+  const notizFeld = document.getElementById('eintrag-notiz');
+  const notiz = notizFeld ? notizFeld.value.trim() : '';
 
   if (eintragBar) {
     const bewegung = {
@@ -1744,7 +1748,7 @@ function verbuche(kategorieId) {
       datum: heuteISO(),
       betrag: -betrag,
       kategorieId: kategorieId,
-      notiz: '',
+      notiz: notiz,
       beweggrundId: null,
       geplant: null
     };
@@ -1765,6 +1769,7 @@ function verbuche(kategorieId) {
     kategorieId: kategorieId,
     quelle: 'manuell',
     autoZugeordnet: false,
+    notiz: notiz,
     beweggrundId: null,
     geplant: null,
     wunschId: null
@@ -4823,10 +4828,19 @@ function fuehreImportDurch() {
 /* ── Eingangskorb (Weg C) ── */
 
 let korbBeweggrund = null;
+let korbNotiz = '';   // angefangene Anmerkung überlebt das Neuzeichnen des Zettels
+
+/* Der Korbzettel wird bei jeder Wahl neu gezeichnet. Damit eine angefangene
+   Anmerkung dabei nicht verlorengeht, wird sie vorher aus dem Feld gerettet. */
+function uebernimmKorbNotiz() {
+  const f = document.getElementById('korb-notiz');
+  if (f) korbNotiz = f.value;
+}
 let korbUebersprungen = new Set();
 let regelVorschlagOffen = null;
 
 function regelVorschlagAnnehmen() {
+  uebernimmKorbNotiz();
   const v = regelVorschlagOffen;
   regelVorschlagOffen = null;
   if (!v) return;
@@ -4858,6 +4872,7 @@ function regelVorschlagAnnehmen() {
 }
 
 function regelVorschlagVerwerfen() {
+  uebernimmKorbNotiz();
   regelVorschlagOffen = null;
   oeffneKorb();
 }
@@ -4928,6 +4943,9 @@ function oeffneKorb() {
       html += '<button type="button" class="stempel' + (korbBeweggrund === g.id ? ' gewaehlt' : '') + '" onclick="korbWaehleBeweggrund(\'' + b.id + '\', \'' + g.id + '\')">' + escapeHtml(g.name) + '</button>';
     }
     html += '</div>';
+    html += '<div class="korb-abschnitt">Anmerkung — freiwillig</div>';
+    html += '<input class="feld" id="korb-notiz" type="text" autocomplete="off" '
+         + 'value="' + escapeHtml(korbNotiz) + '" placeholder="z. B. der Artikel">';
     html += '<div class="korb-abschnitt">Posten wählen — verbucht sofort</div>';
     html += '<div class="postenwahl">';
     for (const p of posten) {
@@ -4970,6 +4988,7 @@ function korbRegeltreffer() {
 }
 
 function zeigeKorbNachlauf() {
+  uebernimmKorbNotiz();
   const treffer = korbRegeltreffer();
   const gesamt = korbListe().length;
   let html = '<div class="zettel-titel">Regeln anwenden</div>';
@@ -5011,15 +5030,20 @@ function fuehreKorbNachlaufAus() {
 }
 
 function korbWaehleBeweggrund(buchungId, beweggrundId) {
+  uebernimmKorbNotiz();
   korbBeweggrund = korbBeweggrund === beweggrundId ? null : beweggrundId;
   oeffneKorb();
 }
 
 function korbVerbuche(buchungId, kategorieId) {
+  uebernimmKorbNotiz();
   const b = daten.buchungen.find(x => x.id === buchungId);
   if (!b) return;
   b.kategorieId = kategorieId;
   b.autoZugeordnet = false;
+  const n = korbNotiz.trim();
+  if (n) b.notiz = n;
+  korbNotiz = '';
   if (korbBeweggrund && kategorieId !== ABHEBUNG_ID) {
     const g = beweggrund(korbBeweggrund);
     if (g) { b.beweggrundId = g.id; b.geplant = g.geplantStandard; }
@@ -5039,11 +5063,15 @@ function korbVerbuche(buchungId, kategorieId) {
 }
 
 function korbEinnahme(buchungId, kategorieId) {
+  uebernimmKorbNotiz();
   const b = daten.buchungen.find(x => x.id === buchungId);
   if (!b) return;
   const ziel = kategorieId || EINNAHME_ID;
   if (ziel === EINNAHME_ID) sichereSammelposten();
   b.kategorieId = ziel;
+  const nE = korbNotiz.trim();
+  if (nE) b.notiz = nE;
+  korbNotiz = '';
   korbBeweggrund = null;
   regelVorschlagOffen = null;
   speichere();
@@ -5078,6 +5106,7 @@ function legeEinnahmePostenAnUndZurueck() {
 
 function korbSpaeter(buchungId) {
   korbUebersprungen.add(buchungId);
+  korbNotiz = '';
   korbBeweggrund = null;
   regelVorschlagOffen = null;
   const liste = korbListe();
@@ -5090,6 +5119,7 @@ function korbSpaeter(buchungId) {
 
 function schliesseKorb() {
   korbUebersprungen = new Set();
+  korbNotiz = '';
   korbBeweggrund = null;
   regelVorschlagOffen = null;
   schliesseZettel();
