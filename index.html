@@ -1032,9 +1032,10 @@
 
 const SPEICHER_SCHLUESSEL = 'fc_data_v1';
 const SCHEMA_VERSION = 2;
-const FASSUNG = '1.7';
+const FASSUNG = '1.8.1';
 const EINNAHME_ID = 'k_einnahme'; // Sammelposten für Gutschriften ohne eigene Zuordnung
 const ABHEBUNG_ID = 'k_bargeldabhebung'; // Pseudo-Posten: erhöht die Kasse, nie budgetwirksam
+const UMBUCHUNG_ID = 'k_umbuchung'; // Pseudo-Posten (v1.8): Geld wechselt nur den Ort — weder Ausgabe noch Einnahme
 
 function startBeweggruende() {
   return [
@@ -1069,8 +1070,7 @@ function leererBestand() {
     beweggruende: startBeweggruende(),
     wunschgruppen: [],
     wuensche: [],
-    bargeld: { bestand: 0, bewegungen: [] },
-    kredite: []
+    bargeld: { bestand: 0, bewegungen: [] }
   };
 }
 
@@ -1133,7 +1133,10 @@ function migriere(d) {
   d.buchungen = d.buchungen || [];
   d.regeln = (d.regeln || []).map(normalisiereRegel);
   d.bargeld = d.bargeld || basis.bargeld;
-  d.kredite = d.kredite || [];
+  // v1.8.1: Das Schuldenfeld entfällt auf ausdrückliche Anweisung. Es wird beim
+  // Laden einmalig verworfen — wer es zurück will, spielt eine Sicherung von
+  // vor dieser Fassung ein.
+  if ('kredite' in d) delete d.kredite;
 
   // Migration Schema 1 -> 2 (Reflexionsebene). Idempotent.
   if (!Array.isArray(d.beweggruende) || d.beweggruende.length === 0) {
@@ -1393,10 +1396,10 @@ function istFesterPosten(k) {
 }
 
 function istAusgabePosten(k) {
-  return k && k.typ !== 'einnahme' && k.id !== EINNAHME_ID && k.id !== ABHEBUNG_ID;
+  return k && k.typ !== 'einnahme' && k.id !== EINNAHME_ID && k.id !== ABHEBUNG_ID && k.id !== UMBUCHUNG_ID;
 }
 function istEinnahmePosten(k) {
-  return k && (k.typ === 'einnahme' || k.id === EINNAHME_ID) && k.id !== ABHEBUNG_ID;
+  return k && (k.typ === 'einnahme' || k.id === EINNAHME_ID) && k.id !== ABHEBUNG_ID && k.id !== UMBUCHUNG_ID;
 }
 function ausgabePosten() {
   return daten.kategorien.filter(k => istAusgabePosten(k) && !k.archiviert)
@@ -1550,6 +1553,13 @@ function render() {
   if (vorgemerkt > 0 && istAktuell) {
     html += '<div class="kassenzeile"><button type="button" onclick="oeffneVormerkbuch()">Vorgemerkt: <b>'
          + euro(vorgemerkt) + '</b></button></div>';
+  }
+
+  /* Umbuchungen — stiller Vermerk, nie budgetwirksam (v1.8) */
+  const umb = umbuchungSummen(blatt);
+  if (umb.anzahl > 0) {
+    html += '<div class="kassenzeile"><button type="button" onclick="oeffneUmbuchungen(\'' + blatt + '\')">Umgebucht: <b>'
+         + umb.anzahl + '</b> — zählt in kein Budget</button></div>';
   }
 
   /* Vermerk */
@@ -1930,6 +1940,9 @@ function oeffneUmbuchen(buchungId, herkunftId) {
          + '<span class="w-name">' + escapeHtml(p.name) + '</span>'
          + '<span class="w-rest' + (rest < 0 ? ' rot' : '') + '">' + (rest < 0 ? 'überzogen um ' + euro(-rest) : 'verbleiben ' + euro(rest)) + '</span></button>';
   }
+  html += '<button type="button" class="wahl-posten" onclick="fuehreUmbuchungAus(\'' + b.id + '\', \'' + UMBUCHUNG_ID + '\', \'' + herkunftId + '\')">'
+       + '<span class="w-name">Umbuchung</span>'
+       + '<span class="w-rest">zählt in kein Budget</span></button>';
   html += '</div>';
   html += '<div class="knopfzeile"><button type="button" class="leise" onclick="oeffnePostenDetail(\'' + herkunftId + '\')">Abbrechen</button></div>';
   oeffneZettel(html);
@@ -2297,6 +2310,16 @@ function volltextVon(e) {
   return e && e.notiz ? e.notiz : roh;
 }
 
+/* Greift eine Regel bei diesem Vorzeichen? Ausgabenposten nur bei Soll,
+   Einnahme-Posten nur bei Haben, Abhebung nur bei Soll — Umbuchungen bei beidem,
+   sonst fängt eine Regel nur die halbe Bewegung (v1.8). */
+function regelRichtungPasst(regel, betrag) {
+  if (regel.kategorieId === UMBUCHUNG_ID) return true;
+  if (regel.kategorieId === ABHEBUNG_ID) return betrag < 0;
+  const ziel = daten.kategorien.find(k => k.id === regel.kategorieId);
+  return betrag < 0 ? (!ziel || istAusgabePosten(ziel)) : !!(ziel && istEinnahmePosten(ziel));
+}
+
 function findeRegel(b) {
   const teile = buchungTeile(b);
   for (const r of aktiveRegeln()) {
@@ -2357,6 +2380,7 @@ function regelVorschlagFuer(b) {
 function postenName(kategorieId) {
   if (kategorieId === EINNAHME_ID) return 'Einnahme (ohne Zuordnung)';
   if (kategorieId === ABHEBUNG_ID) return 'Bargeldabhebung';
+  if (kategorieId === UMBUCHUNG_ID) return 'Umbuchung';
   if (!kategorieId) return 'Kassensturz';
   const k = daten.kategorien.find(x => x.id === kategorieId);
   return k ? k.name : 'Unbekannt';
@@ -2386,6 +2410,10 @@ function oeffneRegeln() {
   html += '<button type="button" class="leise" onclick="oeffneVerwaltung()">Zurück</button>';
   html += '<button type="button" class="knopf" onclick="oeffneRegelEditor(null)">Regel anlegen</button>';
   html += '</div>';
+  if (daten.regeln.length > 0) {
+    html += '<div class="korb-fuss"><button type="button" onclick="oeffneBestandsNachlauf()">'
+         + 'Regeln auf den Bestand anwenden</button></div>';
+  }
   oeffneZettel(html);
 }
 
@@ -2421,6 +2449,9 @@ function oeffneRegelEditor(regelId, vorbelegt, postenVorbelegt) {
   html += '<button type="button" class="wahl-posten" onclick="waehleRegelPosten(\'' + ABHEBUNG_ID + '\')">'
        + '<span class="w-name">Bargeldabhebung <em style="font-style:italic;font-size:0.8rem;color:var(--tinte-blass)">— in die Kasse</em></span>'
        + '<span class="w-rest">' + (regelEditorPosten === ABHEBUNG_ID ? 'gewählt' : '') + '</span></button>';
+  html += '<button type="button" class="wahl-posten" onclick="waehleRegelPosten(\'' + UMBUCHUNG_ID + '\')">'
+       + '<span class="w-name">Umbuchung <em style="font-style:italic;font-size:0.8rem;color:var(--tinte-blass)">— hin und zurück, nie budgetwirksam</em></span>'
+       + '<span class="w-rest">' + (regelEditorPosten === UMBUCHUNG_ID ? 'gewählt' : '') + '</span></button>';
   html += '</div>';
   html += '<div class="knopfzeile">';
   if (r) {
@@ -2530,7 +2561,9 @@ function sichereSammelposten() {
 /* ── Einnahmen ── */
 
 function einnahmenImBlatt(blatt) {
-  return daten.buchungen.filter(b => b.betrag > 0 && b.kategorieId && blattVon(b.datum) === blatt);
+  // Umbuchungen sind keine Einnahmen: der Rückfluss vom eigenen Konto ist kein Einkommen.
+  return daten.buchungen.filter(b => b.betrag > 0 && b.kategorieId
+    && b.kategorieId !== UMBUCHUNG_ID && blattVon(b.datum) === blatt);
 }
 
 function einnahmeSumme(kategorieId, blatt) {
@@ -2701,6 +2734,10 @@ function oeffneEinnahmeUmbuchen(buchungId, herkunftId) {
     }
     html += '</div>';
   }
+  html += '<div class="postenwahl">';
+  html += '<button type="button" class="wahl-posten" onclick="fuehreEinnahmeUmbuchungAus(\'' + b.id + '\', \'' + UMBUCHUNG_ID + '\', \'' + herkunftId + '\')">'
+       + '<span class="w-name">Umbuchung</span><span class="w-rest">keine Einnahme</span></button>';
+  html += '</div>';
   html += '<div class="knopfzeile"><button type="button" class="leise" onclick="oeffneEinnahmeDetail(\'' + herkunftId + '\')">Abbrechen</button></div>';
   oeffneZettel(html);
 }
@@ -3239,263 +3276,254 @@ function oeffneWunschArchiv() {
   oeffneZettel(html);
 }
 
-/* ── Schuldenabbau ── */
+/* ── Schuldenabbau ──
+   Mit v1.8 entfiel die Ansicht, mit v1.8.1 auch das Feld `kredite` — beides auf
+   ausdrückliche Anweisung. Der Schuldenabbau wird künftig außerhalb dieses Buches
+   geführt. Eine Sicherung von vor v1.8.1 enthält die alten Stände weiterhin. */
 
-function letzterStand(kredit) {
-  if (!kredit.staende || kredit.staende.length === 0) return null;
-  return kredit.staende.slice().sort((a, b) => a.datum.localeCompare(b.datum))[kredit.staende.length - 1];
+/* ── Umbuchungen (neu in v1.8) ──
+   Geld, das nur den Ort wechselt: Überträge auf eigene Konten, Ein- und
+   Auszahlungen bei Anlagestellen, Rückflüsse von dort. Solche Bewegungen sind
+   weder Ausgabe noch Einnahme — werden sie als Ausgabe verbucht und ihr
+   Rückfluss als Einnahme, bläht sich beides auf und der Abschluss wird
+   unbrauchbar. Sie bleiben deshalb aus jeder Budget-, Einnahme- und
+   Abschlussrechnung heraus, werden aber vollständig verzeichnet.            */
+
+function umbuchungenImBlatt(blatt) {
+  return daten.buchungen
+    .filter(b => b.kategorieId === UMBUCHUNG_ID && (!blatt || blattVon(b.datum) === blatt))
+    .sort((a, b) => b.datum.localeCompare(a.datum) || b.id.localeCompare(a.id));
 }
 
-function standZumMonat(kredit, monat) {
-  // Letzter bekannter Stand bis einschließlich dieses Monats.
-  let treffer = null;
-  for (const s of (kredit.staende || []).slice().sort((a, b) => a.datum.localeCompare(b.datum))) {
-    if (s.datum.slice(0, 7) <= monat) treffer = s;
+function umbuchungSummen(blatt) {
+  let hin = 0, zurueck = 0, anzahl = 0;
+  for (const b of umbuchungenImBlatt(blatt)) {
+    anzahl++;
+    if (b.betrag < 0) hin += -b.betrag; else zurueck += b.betrag;
   }
-  return treffer ? treffer.betrag : null;
+  return { hin: hin, zurueck: zurueck, saldo: zurueck - hin, anzahl: anzahl };
 }
 
-function gesamtSchulden() {
-  let summe = 0;
-  for (const k of daten.kredite) {
-    const s = letzterStand(k);
-    if (s) summe += s.betrag;
-  }
-  return Math.round(summe * 100) / 100;
+let umbuchungBlatt = null;   // null = alle Blätter
+
+function waehleUmbuchungBlatt(blatt) {
+  umbuchungBlatt = (blatt === 'alle') ? null : blatt;
+  oeffneUmbuchungen();
 }
 
-function schuldenVerlauf() {
-  // Monatsreihe vom ersten erfassten Stand bis zum aktuellen Blatt.
-  const alleDaten = [];
-  for (const k of daten.kredite) {
-    for (const s of (k.staende || [])) alleDaten.push(s.datum.slice(0, 7));
+function oeffneUmbuchungen(blatt) {
+  if (blatt) umbuchungBlatt = blatt;
+  const bl = umbuchungBlatt;
+  const liste = umbuchungenImBlatt(bl);
+  const z = umbuchungSummen(bl);
+
+  let html = '<div class="zettel-titel">Umbuchungen</div>';
+  html += '<p class="hinweistext">Geld, das nur den Ort wechselt — Überträge zwischen eigenen Konten, '
+       + 'Ein- und Auszahlungen bei Anlagestellen. <b>Zählt in kein Budget und in keine Einnahme.</b> '
+       + 'Jede Zeile lässt sich einem Posten zuordnen, falls sie doch eine echte Ausgabe war.</p>';
+
+  html += '<div class="streifen-reihe" style="margin-bottom:10px">';
+  html += '<button type="button" class="stempel' + (bl === null ? ' gewaehlt' : '')
+       + '" onclick="waehleUmbuchungBlatt(\'alle\')">alle Blätter</button>';
+  for (const b of alleBlaetter().slice(0, 12)) {
+    html += '<button type="button" class="stempel' + (b === bl ? ' gewaehlt' : '')
+         + '" onclick="waehleUmbuchungBlatt(\'' + b + '\')">' + escapeHtml(blattName(b)) + '</button>';
   }
-  if (alleDaten.length === 0) return [];
-  const start = alleDaten.sort()[0];
-  const ende = aktuellesBlatt();
-  const reihe = [];
-  let [j, m] = start.split('-').map(Number);
-  while (true) {
-    const monat = j + '-' + String(m).padStart(2, '0');
-    let summe = 0, bekannt = false;
-    for (const k of daten.kredite) {
-      const wert = standZumMonat(k, monat);
-      if (wert !== null) { summe += wert; bekannt = true; }
-    }
-    if (bekannt) reihe.push({ monat: monat, betrag: Math.round(summe * 100) / 100 });
-    if (monat >= ende) break;
-    m++;
-    if (m > 12) { m = 1; j++; }
-    if (reihe.length > 400) break;
-  }
-  return reihe;
-}
-
-function zeichneVerlauf(reihe) {
-  if (reihe.length < 2) return '';
-  const breite = 300, hoehe = 90, rand = 4;
-  const werte = reihe.map(p => p.betrag);
-  const max = Math.max.apply(null, werte);
-  const min = Math.min.apply(null, werte);
-  const spanne = (max - min) || 1;
-  const punkte = reihe.map((p, i) => {
-    const x = rand + (i / (reihe.length - 1)) * (breite - 2 * rand);
-    const y = rand + (1 - (p.betrag - min) / spanne) * (hoehe - 2 * rand);
-    return x.toFixed(1) + ',' + y.toFixed(1);
-  }).join(' ');
-
-  let svg = '<svg class="federstrich" viewBox="0 0 ' + breite + ' ' + hoehe + '" preserveAspectRatio="none" aria-hidden="true">';
-  svg += '<polyline points="' + punkte + '" fill="none" stroke="var(--tinte)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>';
-  svg += '</svg>';
-  return svg;
-}
-
-function oeffneSchulden() {
-  const gesamt = gesamtSchulden();
-  const reihe = schuldenVerlauf();
-  const start = reihe.length > 0 ? reihe[0].betrag : 0;
-  const abgebaut = Math.round((start - gesamt) * 100) / 100;
-  const prozent = start > 0 ? (abgebaut / start) * 100 : 0;
-
-  let html = '<div class="zettel-titel">Schulden</div>';
-
-  if (daten.kredite.length === 0) {
-    html += '<p class="vermerk">Noch kein Kredit verzeichnet.</p>';
-    html += '<p class="hinweistext">Kredite werden mit ihrem jeweiligen Stand erfasst. Der Verlauf entsteht aus den eingetragenen Ständen — ein Eintrag im Monat genügt.</p>';
-  } else {
-    html += '<section class="saldo-kopf" style="padding-top:0">';
-    html += '<div class="zettel">Gesamtstand</div>';
-    html += '<div class="saldo-betrag">' + euro(gesamt) + '</div>';
-    if (reihe.length > 1 && abgebaut > 0) {
-      html += '<div class="frei">abgetragen ' + euro(abgebaut) + ' seit ' + escapeHtml(blattNameLang(reihe[0].monat))
-           + ' — ' + prozent.toFixed(1).replace('.', ',') + ' %</div>';
-    } else if (reihe.length > 1 && abgebaut < 0) {
-      html += '<div class="frei neutral">seit ' + escapeHtml(blattNameLang(reihe[0].monat)) + ' um '
-           + euro(-abgebaut) + ' höher</div>';
-    }
-    html += '</section>';
-
-    if (reihe.length > 1) {
-      html += '<div class="buchtitel" style="margin-top:18px">Verlauf</div>';
-      html += '<div class="verlauf">' + zeichneVerlauf(reihe) + '</div>';
-      html += '<div class="verlauf-marken"><span>' + escapeHtml(blattNameLang(reihe[0].monat)) + '</span>'
-           + '<span>' + escapeHtml(blattNameLang(reihe[reihe.length - 1].monat)) + '</span></div>';
-    }
-
-    html += '<div class="buchtitel" style="margin-top:18px">Kredite</div>';
-    html += '<div class="spaltenkopf"><span>Kredit</span><span></span><span>Stand</span></div>';
-    for (const k of daten.kredite) {
-      const s = letzterStand(k);
-      html += '<button type="button" class="einnahme-zeile" onclick="oeffneKreditDetail(\'' + k.id + '\')">';
-      html += '<span class="name">' + escapeHtml(k.name)
-           + (s ? ' <em>— Stand vom ' + datumKurz(s.datum) + '</em>' : ' <em>— kein Stand</em>') + '</span>';
-      html += '<span class="e-summe schuld">' + (s ? euroOhneZeichen(s.betrag) : '—') + '</span>';
-      html += '</button>';
-    }
-    html += '<div class="abschluss"><span>Summe</span><span class="betrag">' + euro(gesamt) + '</span></div>';
-  }
-
-  html += '<div class="knopfzeile">';
-  html += '<button type="button" class="leise" onclick="oeffneVerwaltung()">Zurück</button>';
-  html += '<button type="button" class="knopf" onclick="oeffneKreditEditor(null)">Kredit anlegen</button>';
-  html += '</div>';
-  oeffneZettel(html);
-}
-
-function oeffneKreditEditor(kreditId) {
-  const k = kreditId ? daten.kredite.find(x => x.id === kreditId) : null;
-  let html = '<div class="zettel-titel">' + (k ? 'Kredit' : 'Neuer Kredit') + '</div>';
-  html += '<div class="feldgruppe"><label for="kr-name">Bezeichnung</label>';
-  html += '<input class="feld" id="kr-name" type="text" autocomplete="off" value="' + (k ? escapeHtml(k.name) : '') + '" placeholder="z. B. Rahmenkredit"></div>';
-  if (!k) {
-    html += '<div class="feldgruppe"><label for="kr-stand">Heutiger Stand in Euro</label>';
-    html += '<input class="feld betrag" id="kr-stand" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00"></div>';
-  }
-  html += '<div class="knopfzeile">';
-  if (k) {
-    html += '<button type="button" class="leise rot" id="kr-loeschen" onclick="kreditLoeschenBestaetigen(\'' + k.id + '\')">Löschen</button>';
-  } else {
-    html += '<button type="button" class="leise" onclick="oeffneSchulden()">Abbrechen</button>';
-  }
-  html += '<button type="button" class="knopf primaer" onclick="speichereKredit(' + (k ? '\'' + k.id + '\'' : 'null') + ')">Übernehmen</button>';
-  html += '</div>';
-  oeffneZettel(html);
-  document.getElementById('kr-name').focus();
-}
-
-function speichereKredit(kreditId) {
-  const name = document.getElementById('kr-name').value.trim();
-  if (!name) { document.getElementById('kr-name').focus(); return; }
-  if (kreditId) {
-    const k = daten.kredite.find(x => x.id === kreditId);
-    if (k) k.name = name;
-  } else {
-    const feld = document.getElementById('kr-stand');
-    const stand = parseBetrag(feld.value);
-    if (!(stand >= 0)) { feld.focus(); return; }
-    daten.kredite.push({
-      id: neueId('d'),
-      name: name,
-      staende: [{ datum: heuteISO(), betrag: stand }]
-    });
-  }
-  speichere();
-  oeffneSchulden();
-  zeigeQuittung('Verbucht.');
-}
-
-function kreditLoeschenBestaetigen(kreditId) {
-  const knopf = document.getElementById('kr-loeschen');
-  if (!knopf) return;
-  if (knopf.dataset.bereit === '1') {
-    const i = daten.kredite.findIndex(x => x.id === kreditId);
-    if (i >= 0) daten.kredite.splice(i, 1);
-    speichere();
-    oeffneSchulden();
-    zeigeQuittung('Kredit gelöscht.');
-  } else {
-    knopf.dataset.bereit = '1';
-    knopf.textContent = 'Wirklich? Alle Stände entfallen.';
-  }
-}
-
-function oeffneKreditDetail(kreditId) {
-  const k = daten.kredite.find(x => x.id === kreditId);
-  if (!k) return;
-  const staende = (k.staende || []).slice().sort((a, b) => b.datum.localeCompare(a.datum));
-  const s = letzterStand(k);
-  const erster = (k.staende || []).slice().sort((a, b) => a.datum.localeCompare(b.datum))[0];
-
-  let html = '<div class="zettel-titel">' + escapeHtml(k.name) + '</div>';
-  html += '<section class="saldo-kopf" style="padding-top:0">';
-  html += '<div class="zettel">Stand</div>';
-  html += '<div class="saldo-betrag">' + (s ? euro(s.betrag) : '—') + '</div>';
-  if (erster && s && erster !== s) {
-    const ab = Math.round((erster.betrag - s.betrag) * 100) / 100;
-    if (ab > 0) html += '<div class="frei">abgetragen ' + euro(ab) + ' seit ' + datumKurz(erster.datum) + '</div>';
-    else if (ab < 0) html += '<div class="frei neutral">um ' + euro(-ab) + ' höher als am ' + datumKurz(erster.datum) + '</div>';
-  }
-  html += '</section>';
-
-  html += '<div class="feldgruppe" style="margin-top:16px"><label for="kd-stand">Neuen Stand eintragen</label>';
-  html += '<input class="feld betrag" id="kd-stand" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00"></div>';
-  html += '<div class="knopfzeile" style="justify-content:flex-end;margin-top:0">';
-  html += '<button type="button" class="knopf primaer" onclick="erfasseStand(\'' + k.id + '\')">Eintragen</button>';
   html += '</div>';
 
-  html += '<div class="buchtitel" style="margin-top:18px">Erfasste Stände</div>';
-  if (staende.length === 0) {
-    html += '<p class="hinweistext" style="text-align:center">Noch kein Stand erfasst.</p>';
+  if (liste.length === 0) {
+    html += '<p class="vermerk">Keine Umbuchung verzeichnet.</p>';
+    html += '<p class="hinweistext">Am schnellsten geht es über eine Regel: Empfänger eintragen, '
+         + 'als Ziel „Umbuchung“ wählen. Sie greift dann in beide Richtungen.</p>';
   } else {
+    html += '<div class="plan-zeile"><span class="p-name">hinaus</span>'
+         + '<span class="p-betrag">' + euroOhneZeichen(z.hin) + '</span></div>';
+    html += '<div class="plan-zeile"><span class="p-name">zurück</span>'
+         + '<span class="p-betrag">' + euroOhneZeichen(z.zurueck) + '</span></div>';
+    html += '<div class="plan-zwischensumme"><span>' + z.anzahl
+         + (z.anzahl === 1 ? ' Bewegung' : ' Bewegungen') + '</span>'
+         + '<span class="p-betrag">' + (z.saldo >= 0 ? '+' : '−') + euroOhneZeichen(Math.abs(z.saldo)) + '</span></div>';
+    html += '<p class="rueck-fuss">Der Saldo ist das, was unterm Strich wirklich abgeflossen oder '
+         + 'zurückgekommen ist. Die beiden Zeilen darüber sind bloßer Umsatz.</p>';
+
+    html += '<div class="buchtitel" style="margin-top:18px">Bewegungen</div>';
     html += '<div class="eintragsliste">';
-    for (const st of staende.slice(0, 24)) {
+    for (const b of liste.slice(0, 80)) {
       html += '<div class="eintragszeile">';
-      html += '<span class="e-datum">' + datumLang(st.datum) + '</span>';
-      html += '<span class="e-betrag">' + euro(st.betrag) + '</span>';
-      html += '<button type="button" onclick="streicheStand(\'' + k.id + '\', \'' + st.datum + '\', this)">streichen</button>';
+      html += '<span class="e-datum">' + datumKurz(b.datum) + '</span>';
+      html += '<span class="e-betrag' + (b.betrag > 0 ? ' haben' : '') + '">'
+           + (b.betrag > 0 ? '+' : '−') + euro(Math.abs(b.betrag)) + '</span>';
+      html += '<button type="button" onclick="oeffneUmbuchungZurueck(\'' + b.id + '\')">zuordnen</button>';
+      const kurz = kurzbezeichnung(b);
+      if (kurz) html += '<span class="e-auto">' + escapeHtml(kurz) + '</span>';
       html += '</div>';
     }
     html += '</div>';
+    if (liste.length > 80) {
+      html += '<p class="rueck-fuss">' + (liste.length - 80) + ' weitere nicht aufgeführt.</p>';
+    }
   }
 
-  html += '<div class="knopfzeile">';
-  html += '<button type="button" class="leise" onclick="oeffneKreditEditor(\'' + k.id + '\')">Umbenennen</button>';
-  html += '<button type="button" class="leise" onclick="oeffneSchulden()">Zurück</button>';
-  html += '</div>';
+  html += '<div class="knopfzeile"><button type="button" class="leise" onclick="oeffneVerwaltung()">Zurück</button></div>';
   oeffneZettel(html);
 }
 
-function erfasseStand(kreditId) {
-  const k = daten.kredite.find(x => x.id === kreditId);
-  if (!k) return;
-  const feld = document.getElementById('kd-stand');
-  const betrag = parseBetrag(feld.value);
-  if (!(betrag >= 0)) { feld.focus(); return; }
-  const heute = heuteISO();
-  if (!k.staende) k.staende = [];
-  const vorhanden = k.staende.find(s => s.datum === heute);
-  if (vorhanden) vorhanden.betrag = betrag;
-  else k.staende.push({ datum: heute, betrag: betrag });
-  speichere();
-  oeffneKreditDetail(kreditId);
-  zeigeQuittung('Verbucht.');
+/* Eine Umbuchung war doch eine echte Ausgabe oder Einnahme — zurückholen. */
+function oeffneUmbuchungZurueck(buchungId) {
+  const b = daten.buchungen.find(x => x.id === buchungId);
+  if (!b) return;
+  const istHaben = b.betrag > 0;
+  const posten = istHaben
+    ? daten.kategorien.filter(k => istEinnahmePosten(k) && !k.archiviert)
+        .sort((x, y) => (x.reihenfolge || 0) - (y.reihenfolge || 0) || x.name.localeCompare(y.name, 'de'))
+    : ausgabePosten();
+  const blatt = blattVon(b.datum);
+
+  let html = '<div class="zettel-titel">Zuordnen</div>';
+  html += '<div class="korb-karte">';
+  html += '<div class="korb-kopf"><span class="k-datum">' + datumLang(b.datum) + '</span>';
+  html += '<span class="k-betrag' + (istHaben ? ' haben' : '') + '">'
+       + (istHaben ? '+' : '−') + euro(Math.abs(b.betrag)) + '</span></div>';
+  if (b.text) html += '<div class="korb-zweck">' + escapeHtml(b.text.length > 140 ? b.text.slice(0, 140) + '…' : b.text) + '</div>';
+  html += '</div>';
+  html += '<p class="hinweistext">Jetzt als <b>Umbuchung</b> verzeichnet — zählt in kein Budget. '
+       + (istHaben ? 'Einnahme-Posten wählen:' : 'Posten wählen:') + '</p>';
+
+  if (posten.length === 0) {
+    html += '<p class="hinweistext" style="text-align:center">Kein passender Posten vorhanden.</p>';
+  } else {
+    html += '<div class="postenwahl">';
+    for (const p of posten) {
+      let rechts;
+      if (istHaben) {
+        rechts = euroOhneZeichen(einnahmeSumme(p.id, blatt)) + ' im Blatt';
+      } else {
+        const rest = (p.monatsbudget || 0) - istBetrag(p.id, blatt);
+        rechts = rest < 0 ? 'überzogen um ' + euro(-rest) : 'verbleiben ' + euro(rest);
+      }
+      html += '<button type="button" class="wahl-posten" onclick="holeUmbuchungZurueck(\'' + b.id + '\', \'' + p.id + '\')">'
+           + '<span class="w-name">' + escapeHtml(p.name) + '</span>'
+           + '<span class="w-rest">' + rechts + '</span></button>';
+    }
+    html += '</div>';
+  }
+  html += '<div class="knopfzeile"><button type="button" class="leise" onclick="oeffneUmbuchungen()">Abbrechen</button></div>';
+  oeffneZettel(html);
 }
 
-function streicheStand(kreditId, datum, knopf) {
-  if (knopf.dataset.bereit !== '1') {
-    knopf.dataset.bereit = '1';
-    knopf.textContent = 'wirklich streichen?';
-    knopf.classList.add('bestaetigen');
+function holeUmbuchungZurueck(buchungId, zielId) {
+  const b = daten.buchungen.find(x => x.id === buchungId);
+  if (!b) return;
+  if (zielId === EINNAHME_ID) sichereSammelposten();
+  b.kategorieId = zielId;
+  b.autoZugeordnet = false;
+  speichere();
+  render();
+  oeffneUmbuchungen();
+  zeigeQuittung('Zugeordnet.');
+}
+
+/* ── Regeln auf den Bestand anwenden (neu in v1.8) ──
+   Bis v1.7 galten Regeln nur für den Eingangskorb; schon verbuchte Einträge
+   blieben, wie sie waren. Wer eine Regel nachträglich anlegt — etwa für
+   Umbuchungen —, müsste sonst Monate von Hand nacharbeiten. Diese Ansicht
+   zeigt vorher genau, was sich ändern würde, und ändert nichts ohne Zutun.  */
+
+function bestandsRegeltreffer() {
+  const treffer = [];
+  for (const b of daten.buchungen) {
+    if (b.quelle === 'manuell') continue;          // Handeinträge bleiben unberührt
+    const r = findeRegel(b);
+    if (!r) continue;
+    if (!regelRichtungPasst(r, b.betrag)) continue;
+    if (b.kategorieId === r.kategorieId) continue; // sitzt schon richtig
+    treffer.push({ buchung: b, regel: r, vorher: b.kategorieId || null });
+  }
+  return treffer;
+}
+
+function oeffneBestandsNachlauf() {
+  const treffer = bestandsRegeltreffer();
+
+  let html = '<div class="zettel-titel">Regeln auf den Bestand</div>';
+  if (treffer.length === 0) {
+    html += '<p class="vermerk">Keine Regel greift auf einen bereits verbuchten Eintrag.</p>';
+    html += '<p class="hinweistext">Alles sitzt so, wie es die geltenden Regeln vorsehen.</p>';
+    html += '<div class="knopfzeile"><button type="button" class="leise" onclick="oeffneRegeln()">Zurück</button></div>';
+    oeffneZettel(html);
     return;
   }
-  const k = daten.kredite.find(x => x.id === kreditId);
-  if (k) {
-    const i = k.staende.findIndex(s => s.datum === datum);
-    if (i >= 0) k.staende.splice(i, 1);
-    speichere();
+
+  const neuZugeordnet = treffer.filter(t => !t.vorher);
+  const umgebucht = treffer.filter(t => t.vorher);
+
+  html += '<p class="hinweistext"><b>' + treffer.length + '</b> von ' + daten.buchungen.length
+       + ' verzeichneten Einträgen würden sich ändern. Handeinträge bleiben stets unberührt.</p>';
+
+  const jeZiel = {};
+  for (const t of treffer) {
+    const name = postenName(t.regel.kategorieId);
+    jeZiel[name] = (jeZiel[name] || 0) + 1;
   }
-  oeffneKreditDetail(kreditId);
-  zeigeQuittung('Stand gestrichen.');
+  html += '<div class="spaltenkopf"><span>Neues Ziel</span><span></span><span>Anzahl</span></div>';
+  for (const name of Object.keys(jeZiel).sort((a, b) => jeZiel[b] - jeZiel[a])) {
+    html += '<div class="einnahme-zeile" style="pointer-events:none"><span class="name">' + escapeHtml(name) + '</span>'
+         + '<span class="e-summe">' + jeZiel[name] + '</span></div>';
+  }
+
+  if (umgebucht.length > 0) {
+    html += '<div class="buchtitel" style="margin-top:18px">Davon umgebucht</div>';
+    const jeHerkunft = {};
+    for (const t of umgebucht) {
+      const schl = postenName(t.vorher) + ' → ' + postenName(t.regel.kategorieId);
+      jeHerkunft[schl] = (jeHerkunft[schl] || 0) + 1;
+    }
+    html += '<div class="abs-liste">';
+    for (const schl of Object.keys(jeHerkunft).sort((a, b) => jeHerkunft[b] - jeHerkunft[a])) {
+      html += '<div class="zeile"><span class="n">' + escapeHtml(schl) + '</span>'
+           + '<span class="anz"></span><span class="b">' + jeHerkunft[schl] + '</span></div>';
+    }
+    html += '</div>';
+    html += '<p class="rueck-fuss">Diese Einträge sind bereits einem Posten zugeordnet. '
+         + 'Ihre bisherige Zuordnung wird ersetzt.</p>';
+  }
+  if (neuZugeordnet.length > 0) {
+    html += '<p class="rueck-fuss">' + neuZugeordnet.length + ' davon sind bislang ohne Posten.</p>';
+  }
+
+  html += '<p class="hinweistext" style="color:var(--siegellack);margin-top:14px">'
+       + 'Dieser Schritt lässt sich nicht zurücknehmen. <b>Vorher eine Sicherung anlegen.</b></p>';
+  html += '<div class="knopfzeile">';
+  html += '<button type="button" class="leise" onclick="oeffneSicherung()">Erst sichern</button>';
+  html += '<button type="button" class="knopf primaer" id="bn-los" onclick="bestandsNachlaufBestaetigen()">Anwenden</button>';
+  html += '</div>';
+  html += '<div class="knopfzeile"><button type="button" class="leise" onclick="oeffneRegeln()">Abbrechen</button></div>';
+  oeffneZettel(html);
+}
+
+function bestandsNachlaufBestaetigen() {
+  const knopf = document.getElementById('bn-los');
+  if (!knopf) return;
+  if (knopf.dataset.bereit !== '1') {
+    knopf.dataset.bereit = '1';
+    knopf.textContent = 'Wirklich? Nochmals tippen.';
+    return;
+  }
+  const treffer = bestandsRegeltreffer();
+  for (const t of treffer) {
+    t.buchung.kategorieId = t.regel.kategorieId;
+    t.buchung.autoZugeordnet = true;
+    if (t.regel.kategorieId === UMBUCHUNG_ID || t.regel.kategorieId === ABHEBUNG_ID) {
+      t.buchung.beweggrundId = null;   // an einer Umbuchung ist kein Beweggrund sinnvoll
+      t.buchung.geplant = null;
+    }
+    if (t.regel.kategorieId === EINNAHME_ID) sichereSammelposten();
+  }
+  speichere();
+  abschlussPufferLeeren();
+  render();
+  zeigeQuittung(treffer.length + (treffer.length === 1 ? ' Eintrag' : ' Einträge') + ' zugeordnet.');
+  oeffneRegeln();
 }
 
 /* ── Haushaltskonto-Planung ── */
@@ -3711,7 +3739,7 @@ function ausgabenEintraege(blatt) {
     && istAusgabePosten(daten.kategorien.find(k => k.id === b.kategorieId))
     && (!blatt || blattVon(b.datum) === blatt));
   const ausC = daten.bargeld.bewegungen.filter(c =>
-    c.betrag < 0 && c.kategorieId
+    c.betrag < 0 && c.kategorieId && c.kategorieId !== UMBUCHUNG_ID
     && (!blatt || blattVon(c.datum) === blatt));
   return ausB.concat(ausC);
 }
@@ -4552,8 +4580,8 @@ function oeffneVerwaltung() {
     ['Abschluss des Blattes', 'oeffneAbschluss()'],
     ['Haushaltskonto planen', 'oeffnePlanung()'],
     ['Vormerkbuch', 'oeffneVormerkbuch()'],
-    ['Schulden', 'oeffneSchulden()'],
     ['Einnahmen', 'oeffneEinnahmen()'],
+    ['Umbuchungen', 'oeffneUmbuchungen()'],
     ['Regeln', 'oeffneRegeln()'],
     ['Beweggründe', 'oeffneBeweggruende()'],
     ['Frühere Blätter', 'oeffneBlattwahl()'],
@@ -4779,12 +4807,8 @@ function fuehreImportDurch() {
     // Regelanwendung: Treffer werden unmittelbar verbucht (bestätigte Entscheidung zu v0.4).
     let kategorieId = null, autoZugeordnet = false;
     const regel = findeRegel({ empfaenger: empf, zweck: zweck });
-    if (regel) {
-      const ziel = daten.kategorien.find(k => k.id === regel.kategorieId);
-      const passt = regel.kategorieId === ABHEBUNG_ID
-        ? betrag < 0
-        : (betrag < 0 ? (!ziel || istAusgabePosten(ziel)) : (ziel && istEinnahmePosten(ziel)));
-      if (passt) { kategorieId = regel.kategorieId; autoZugeordnet = true; automatisch++; }
+    if (regel && regelRichtungPasst(regel, betrag)) {
+      kategorieId = regel.kategorieId; autoZugeordnet = true; automatisch++;
     }
 
     daten.buchungen.push({
@@ -4934,6 +4958,9 @@ function oeffneKorb() {
     }
     html += '<button type="button" class="wahl-posten" onclick="korbEinnahme(\'' + b.id + '\', \'' + EINNAHME_ID + '\')">'
          + '<span class="w-name">Ohne Zuordnung</span><span class="w-rest">Sammelposten</span></button>';
+    html += '<button type="button" class="wahl-posten" onclick="korbVerbuche(\'' + b.id + '\', \'' + UMBUCHUNG_ID + '\')">'
+         + '<span class="w-name">Umbuchung</span>'
+         + '<span class="w-rest">Rückfluss, keine Einnahme</span></button>';
     html += '</div>';
     html += '<div class="korb-abschnitt"><button type="button" class="leise" style="padding:2px 0" onclick="oeffneEinnahmePostenAusKorb()">Einnahme-Posten anlegen</button></div>';
   } else {
@@ -4958,6 +4985,9 @@ function oeffneKorb() {
     html += '<button type="button" class="wahl-posten" onclick="korbVerbuche(\'' + b.id + '\', \'' + ABHEBUNG_ID + '\')">'
          + '<span class="w-name">Bargeldabhebung</span>'
          + '<span class="w-rest">in die Kasse</span></button>';
+    html += '<button type="button" class="wahl-posten" onclick="korbVerbuche(\'' + b.id + '\', \'' + UMBUCHUNG_ID + '\')">'
+         + '<span class="w-name">Umbuchung</span>'
+         + '<span class="w-rest">nur der Ort wechselt</span></button>';
     html += '</div>';
   }
 
@@ -4978,11 +5008,7 @@ function korbRegeltreffer() {
   for (const b of korbListe()) {
     const r = findeRegel(b);
     if (!r) continue;
-    const ziel = daten.kategorien.find(k => k.id === r.kategorieId);
-    const passt = r.kategorieId === ABHEBUNG_ID
-      ? b.betrag < 0
-      : (b.betrag < 0 ? (!ziel || istAusgabePosten(ziel)) : (ziel && istEinnahmePosten(ziel)));
-    if (passt) treffer.push({ buchung: b, regel: r });
+    if (regelRichtungPasst(r, b.betrag)) treffer.push({ buchung: b, regel: r });
   }
   return treffer;
 }
@@ -5044,7 +5070,7 @@ function korbVerbuche(buchungId, kategorieId) {
   const n = korbNotiz.trim();
   if (n) b.notiz = n;
   korbNotiz = '';
-  if (korbBeweggrund && kategorieId !== ABHEBUNG_ID) {
+  if (korbBeweggrund && kategorieId !== ABHEBUNG_ID && kategorieId !== UMBUCHUNG_ID) {
     const g = beweggrund(korbBeweggrund);
     if (g) { b.beweggrundId = g.id; b.geplant = g.geplantStandard; }
   }
