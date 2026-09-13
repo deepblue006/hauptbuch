@@ -1032,7 +1032,7 @@
 
 const SPEICHER_SCHLUESSEL = 'fc_data_v1';
 const SCHEMA_VERSION = 2;
-const FASSUNG = '1.8.1';
+const FASSUNG = '1.9';
 const EINNAHME_ID = 'k_einnahme'; // Sammelposten für Gutschriften ohne eigene Zuordnung
 const ABHEBUNG_ID = 'k_bargeldabhebung'; // Pseudo-Posten: erhöht die Kasse, nie budgetwirksam
 const UMBUCHUNG_ID = 'k_umbuchung'; // Pseudo-Posten (v1.8): Geld wechselt nur den Ort — weder Ausgabe noch Einnahme
@@ -1353,9 +1353,10 @@ function buchungenImBlatt(blatt) {
 }
 
 function istBetrag(kategorieId, blatt) {
+  // Erstattungen (positive Buchungen auf diesem Posten) mindern das Ist — v1.9.
   let summe = 0;
   for (const b of daten.buchungen) {
-    if (b.kategorieId === kategorieId && b.betrag < 0 && blattVon(b.datum) === blatt) {
+    if (b.kategorieId === kategorieId && blattVon(b.datum) === blatt) {
       summe += -b.betrag;
     }
   }
@@ -1871,6 +1872,17 @@ function oeffnePostenDetail(kategorieId) {
   html += '<button type="button" class="knopf primaer" onclick="speicherePosten(\'' + p.id + '\')">Übernehmen</button>';
   html += '</div>';
 
+  // Erstattungsvermerk (v1.9): nur zeigen, wenn es etwas zu zeigen gibt.
+  const pz = postenImBlatt(p.id, blatt);
+  if (pz.erstattet > 0) {
+    html += '<div class="buchtitel" style="margin-top:14px">Rechnung des Postens</div>';
+    html += '<div class="plan-zeile"><span class="p-name">Ausgaben</span>'
+         + '<span class="p-betrag">' + euroOhneZeichen(pz.brutto) + '</span></div>';
+    html += '<div class="plan-zeile"><span class="p-name">davon erstattet</span>'
+         + '<span class="p-betrag">− ' + euroOhneZeichen(pz.erstattet) + '</span></div>';
+    html += '<div class="plan-zwischensumme"><span>Trägt der Haushalt</span>'
+         + '<span class="p-betrag">' + euroOhneZeichen(pz.summe) + '</span></div>';
+  }
   html += '<div class="buchtitel" style="margin-top:14px">Einträge · Blatt ' + escapeHtml(blattName(blatt)) + '</div>';
   if (eintraege.length === 0) {
     html += '<p class="hinweistext" style="text-align:center">Kein Eintrag auf diesem Blatt.</p>';
@@ -2562,8 +2574,11 @@ function sichereSammelposten() {
 
 function einnahmenImBlatt(blatt) {
   // Umbuchungen sind keine Einnahmen: der Rückfluss vom eigenen Konto ist kein Einkommen.
+  // Erstattungen ebenso wenig (v1.9) — sie mindern ihren Posten, statt Einkommen zu sein.
   return daten.buchungen.filter(b => b.betrag > 0 && b.kategorieId
-    && b.kategorieId !== UMBUCHUNG_ID && blattVon(b.datum) === blatt);
+    && b.kategorieId !== UMBUCHUNG_ID
+    && !istAusgabePosten(daten.kategorien.find(k => k.id === b.kategorieId))
+    && blattVon(b.datum) === blatt);
 }
 
 function einnahmeSumme(kategorieId, blatt) {
@@ -2738,6 +2753,18 @@ function oeffneEinnahmeUmbuchen(buchungId, herkunftId) {
   html += '<button type="button" class="wahl-posten" onclick="fuehreEinnahmeUmbuchungAus(\'' + b.id + '\', \'' + UMBUCHUNG_ID + '\', \'' + herkunftId + '\')">'
        + '<span class="w-name">Umbuchung</span><span class="w-rest">keine Einnahme</span></button>';
   html += '</div>';
+  // Erstattung (v1.9): den Eintrag dem Posten zuordnen, dessen Ausgabe er mindert.
+  const aP = ausgabePosten();
+  if (aP.length > 0) {
+    html += '<p class="hinweistext" style="margin-top:12px">Oder als <b>Erstattung</b> — mindert den Posten, auf dem die Ausgabe steht:</p>';
+    html += '<div class="postenwahl">';
+    for (const p of aP) {
+      html += '<button type="button" class="wahl-posten" onclick="fuehreEinnahmeUmbuchungAus(\'' + b.id + '\', \'' + p.id + '\', \'' + herkunftId + '\')">'
+           + '<span class="w-name">' + escapeHtml(p.name) + '</span>'
+           + '<span class="w-rest">Ist ' + euroOhneZeichen(istBetrag(p.id, blattVon(b.datum))) + '</span></button>';
+    }
+    html += '</div>';
+  }
   html += '<div class="knopfzeile"><button type="button" class="leise" onclick="oeffneEinnahmeDetail(\'' + herkunftId + '\')">Abbrechen</button></div>';
   oeffneZettel(html);
 }
@@ -3732,6 +3759,32 @@ function entferneKorrektur() {
    keine Schwellen, keine Farbcodierung nach Kennzahlen, keine Wertungswörter.
    Sie zeigt Zusammenhänge und überlässt die Deutung dem Leser.            */
 
+/* ── Erstattungen (neu in v1.9) ──
+   Eine positive Buchung auf einem Ausgabenposten ist eine Erstattung: Geld, das
+   für eine Ausgabe zurückkommt — von der Krankenkasse, vom Händler, von einem
+   Menschen, der sich die Kosten teilt. Sie ist keine Einnahme, denn sie
+   vermehrt nichts; sie mindert eine Ausgabe. Bis v1.8 war sie beides zugleich:
+   die Ausgabe stand brutto im Posten, die Erstattung als Einnahme daneben. Das
+   ließ jeden Posten überzogen aussehen, an dem sich jemand beteiligt.
+   Kein neues Feld, kein Schemasprung — nur eine Buchung, die dorthin zeigt,
+   wo sie hingehört.                                                          */
+
+function erstattungsEintraege(blatt) {
+  return daten.buchungen.filter(b =>
+    b.betrag > 0 && b.kategorieId && b.kategorieId !== ABHEBUNG_ID
+    && b.kategorieId !== UMBUCHUNG_ID
+    && istAusgabePosten(daten.kategorien.find(k => k.id === b.kategorieId))
+    && (!blatt || blattVon(b.datum) === blatt));
+}
+
+function erstattetBetrag(kategorieId, blatt) {
+  let summe = 0;
+  for (const b of daten.buchungen) {
+    if (b.kategorieId === kategorieId && b.betrag > 0 && blattVon(b.datum) === blatt) summe += b.betrag;
+  }
+  return summe;
+}
+
 function ausgabenEintraege(blatt) {
   // Grundgesamtheit: Ausgaben-Einträge (Buchungen + Bargeld) des Zeitraums.
   const ausB = daten.buchungen.filter(b =>
@@ -3979,13 +4032,25 @@ function blattAuszug(blatt) {
   if (abschlussPuffer.has(blatt)) return abschlussPuffer.get(blatt);
   const eintraege = ausgabenEintraege(blatt);
   const jePosten = new Map();
+  const hole = id => {
+    let m = jePosten.get(id);
+    if (!m) { m = { anzahl: 0, brutto: 0, erstattet: 0, summe: 0, eintraege: [], erstattungen: [] }; jePosten.set(id, m); }
+    return m;
+  };
   for (const e of eintraege) {
-    let m = jePosten.get(e.kategorieId);
-    if (!m) { m = { anzahl: 0, summe: 0, eintraege: [] }; jePosten.set(e.kategorieId, m); }
+    const m = hole(e.kategorieId);
     m.anzahl++;
-    m.summe += Math.abs(e.betrag);
+    m.brutto += Math.abs(e.betrag);
     m.eintraege.push(e);
   }
+  // Erstattungen mindern den Posten, zählen aber nicht als Ausgabe-Eintrag:
+  // Klumpen, Empfänger und größte Einzelausgaben bleiben auf den Brutto-Ausgaben.
+  for (const e of erstattungsEintraege(blatt)) {
+    const m = hole(e.kategorieId);
+    m.erstattet += e.betrag;
+    m.erstattungen.push(e);
+  }
+  for (const m of jePosten.values()) m.summe = m.brutto - m.erstattet;
   const auszug = { eintraege: eintraege, jePosten: jePosten };
   abschlussPuffer.set(blatt, auszug);
   return auszug;
@@ -3993,8 +4058,9 @@ function blattAuszug(blatt) {
 
 function postenImBlatt(kategorieId, blatt) {
   const m = blattAuszug(blatt).jePosten.get(kategorieId);
-  if (!m) return { anzahl: 0, summe: 0, schnitt: 0, eintraege: [] };
-  return { anzahl: m.anzahl, summe: m.summe, schnitt: m.summe / m.anzahl, eintraege: m.eintraege };
+  if (!m) return { anzahl: 0, summe: 0, brutto: 0, erstattet: 0, schnitt: 0, eintraege: [], erstattungen: [] };
+  return { anzahl: m.anzahl, summe: m.summe, brutto: m.brutto, erstattet: m.erstattet,
+           schnitt: m.anzahl ? m.brutto / m.anzahl : 0, eintraege: m.eintraege, erstattungen: m.erstattungen };
 }
 
 function frueherBlaetter(blatt, anzahl) {
@@ -4963,6 +5029,18 @@ function oeffneKorb() {
          + '<span class="w-rest">Rückfluss, keine Einnahme</span></button>';
     html += '</div>';
     html += '<div class="korb-abschnitt"><button type="button" class="leise" style="padding:2px 0" onclick="oeffneEinnahmePostenAusKorb()">Einnahme-Posten anlegen</button></div>';
+    // Erstattung (v1.9): mindert den Posten, auf dem die Ausgabe steht.
+    if (posten.length > 0) {
+      html += '<div class="korb-abschnitt">Oder als Erstattung — mindert einen Posten</div>';
+      html += '<div class="postenwahl">';
+      for (const p of posten) {
+        const ist = istBetrag(p.id, blatt);
+        html += '<button type="button" class="wahl-posten" onclick="korbVerbuche(\'' + b.id + '\', \'' + p.id + '\')">'
+             + '<span class="w-name">' + escapeHtml(p.name) + '</span>'
+             + '<span class="w-rest">Ist ' + euroOhneZeichen(ist) + ' → ' + euroOhneZeichen(ist - b.betrag) + '</span></button>';
+      }
+      html += '</div>';
+    }
   } else {
     html += '<div class="korb-abschnitt">Beweggrund — freiwillig, ein Tipp</div>';
     html += '<div class="streifen-reihe">';
